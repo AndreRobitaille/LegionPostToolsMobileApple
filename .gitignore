@@ -60,3 +60,21 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# Local Apple build products
+.DS_Store
+DerivedData/
+build/
+*.xcarchive
+*.xcresult
+
+# Local credentials and signing material
+.env
+.env.*
+!.env.example
+*.p12
+*.p8
+*.mobileprovision
+*.provisionprofile
+*.keychain
+*.keychain-db
