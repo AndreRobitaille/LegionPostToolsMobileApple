@@ -74,7 +74,7 @@ struct PostConnectionRoot<LocalContent: View>: View {
             NavigationStack {
                 settings
                     .toolbar { ToolbarItem(placement: .topBarLeading) {
-                        Button("Done") { browser.cancel(); showSettings = false }.tint(Palette.surface)
+                        Button("Done") { browser.cancel(); showSettings = false }.tint(Palette.navy)
                     } }
             }
             .overlay {
