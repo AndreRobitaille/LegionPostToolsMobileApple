@@ -14,39 +14,49 @@ Do not enable VoiceOver or run assistive-technology checks or
 accessibility audits unless Andre explicitly requests them. Historical diagnostic
 notes remain a record of earlier work, not instructions to repeat it.
 
-## Standard-size workflow implementation
+## Approved workflow implementation
 
-October 12: implement the approved four-screen study in the connected SwiftUI
-journey, beginning with recording and confirmation, then Home and member details.
-Keep the shared person header and native Home/Follow-ups tabs. Group outcome
-choices in one white surface, summarize editable method/time, disclose optional
-notes and follow-up time editing, and pin Save in the native bottom safe area.
-No outcome is selected automatically. Draft, correction and uncertain-submission
-recovery retain their existing identities and persistence rules.
+Andre approved the October 12 visual study for SwiftUI, superseding the earlier
+card-heavy visual plan below. Carry the same design through connected and local
+practice screens. The job remains choosing a person, making contact, recording
+a truthful outcome and following through.
 
-Confirmation displays accepted receipt facts and offers Home, the saved follow-up
-and correction. Home prioritizes pending submissions and named drafts, then shows
-the next open caller-owned follow-up and recent caller-owned checks. Read all
-pages before ranking these summaries; resolve names only for displayed records
-and retain no directory/history cache. Loading and failed reads must not claim an
-empty list. Hide suggestions management belongs in the suggestion flow.
+- Home uses a compact navy masthead with the approved buddy artwork left, app
+  title and Post identity beside it, and Account right. First-use/status symbols
+  sit beside headings. Pending submissions and unfinished work take priority,
+  followed by the next open follow-up or an invitation to choose a member.
+- Choose a member combines search and suggestions. Plain rows with person initials
+  and chevrons represent navigation; search still requests only permitted results.
+- Member detail uses a navy profile, prominent call and outlined recording actions,
+  a short gold conversation section and secondary Contacts navigation.
+- Recording uses compact person/method/time context above one white working sheet.
+  Outcomes are radio rows; notes and follow-up time editing remain optional.
+  Save stays in the native bottom safe area, with keyboard Done beside it.
+  Discard is in Check options. No outcome is selected by a phone handoff.
+- Connected confirmation shows accepted receipt facts below a green success heading.
+  A follow-up includes its date and separate phone-alert status. Local confirmation
+  explicitly retains its on-phone storage status. Home and correction remain available.
+- Follow-up detail leads with the person, calendar date and member action, then
+  phone-alert controls and completion. Completion does not record a conversation.
 
-Member detail places contact and recording actions ahead of the expandable
-conversation prompt. Follow-up detail places the member action before phone-alert
-settings. Keep eligibility explanations and phone-alert status truthful. Verify
-the changed normal-size iPhone 17 Pro journey, accepted corrections, retained
-drafts and uncertain saves with synthetic data. No VoiceOver, accessibility or
-large-font work is part of this implementation.
+Palette: navy `#102B46`, ink `#172D42`, mist `#E9EFF2`, context `#DCE7EE`,
+gold `#B68A3D`, conversation `#F1E7D0`, white and success green `#DCECE3`.
+Native text styles and Home/Follow-ups tabs remain. Use capsule actions, flat
+navigation rows and broad task sections rather than a rounded card for each fact.
 
-The connected implementation now follows this plan. Standard-size simulator
-checks cover accepted facts, returning Home from either main tab, correction,
-method/note restoration after process restart, pending-save recovery and stale
-correction review. Package checks cover complete pagination, latest revisions,
-protected drafts and receipt recovery. These use synthetic Post responses; they
-are not physical-phone or live-backend acceptance. While entering a note, Done
-shares the bottom action bar with Save so a floating keyboard control cannot
-cover it. Connected entry and receipt summaries retain the recorded entry zone,
-with a zone label when it differs from the device's current zone.
+Preserve draft, correction, receipt and authority contracts. Read complete history
+before ranking Home summaries, resolve only displayed people, and keep those
+summaries in memory. Loading or failure must not claim there is no work. Phone
+alerts and Contacts keep their existing explicit permission and review flows.
+
+Verify standard-size iPhone 17 Pro screenshots and focused save/correction,
+interruption, uncertain-response, stale-correction, navigation and local-practice
+scenarios with synthetic data. Do not run VoiceOver, audits or large-font tests.
+Simulator appearance and synthetic responses do not establish phone usability or
+live backend acceptance.
+
+The remaining sections are historical design proposals and observations. The
+approved direction above and [current decisions](DECISIONS.md) take precedence.
 
 ## Scroll-edge contrast follow-up
 
@@ -335,3 +345,19 @@ After design review, create the app project and implement durable local state,
 reminder lifecycle, and meaningful workflow tests. Device signing and the real
 phone's iOS version are still open. No backend integration is required to review
 this design.
+
+## Approved design verification
+
+The native implementation builds for simulator and signed iPhone Release. Nine
+focused standard-size UI cases pass across the completed runs: Home/tabs/settings,
+restored unfinished work, chooser browsing and no-results recovery, accepted
+records and follow-ups, durable method/note entry, uncertain-save reconciliation,
+stale correction and the local simulated-contact journey. The navigation
+restoration case now uses the existing isolated workflow fixture rather than the
+older simulator-specific Contacts fixture. All 93 package tests pass.
+
+Rendered native Home, chooser, member, recording, receipt and follow-up screens
+were inspected at standard iPhone 17 Pro size, including keyboard and recovery
+states. These use synthetic records. No VoiceOver, accessibility audit or
+large-font run was performed. Physical installation does not establish acceptance
+of the redesigned workflow or new live-backend behavior.

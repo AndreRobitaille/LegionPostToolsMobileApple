@@ -24,7 +24,7 @@ unless explicitly requested.
 
 | Source | Useful material to store | Current coverage |
 | --- | --- | --- |
-| [Apple Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines) | Brief recommendations, exact source sections, platform scope, exceptions, and review questions. | Index and selected sections of ten topic pages; 12 review criteria. |
+| [Apple Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines) | Brief recommendations, exact source sections, platform scope, exceptions, and review questions. | Index and selected sections of ten topic pages; Selected platform review criteria. |
 | [Learn UI Design](https://www.learnui.design/blog/ios-design-guidelines-templates.html) | A reading map for illustrated explanations of layout, navigation, lists, controls, typography, and points versus pixels. | Article reviewed; marked as an iOS 26 explainer, updated April 22, 2026. Verify implementation claims against Apple. |
 | [Pttrns](https://app.pttrns.com/) | Selected example links, observed screen/flow details, and our assessment of where each pattern fits. | Public landing page reviewed. It advertises free accounts; individual patterns require signed-in review and have not been assessed. |
 
@@ -32,6 +32,16 @@ Apple's HIG provides [Markdown pages](https://developer.apple.com/design/human-i
 For selected topics, append `.md` to the canonical topic URL. This is useful for
 focused reading; keep the ordinary page URL as the citation. Record a section
 heading so an agent can find the supporting passage even if an anchor changes.
+
+## Selected product examples
+
+The library also includes narrow observations from [Things’ Features page](https://culturedcode.com/things/features/)
+and [Day One’s iOS journal list](https://dayoneapp.com/guides/tips-and-tutorials/journal-views-in-day-one-for-ios/).
+The inspected images are historical (2017 and June 2024 respectively), even though
+the source pages remain available. They inform grouping, date hierarchy and action
+emphasis, not current iOS appearance. `ios-compact-activity` captures those lessons.
+`ios-person-action-proximity` uses the [Apple Contacts workflow guide](https://support.apple.com/guide/iphone/add-and-use-contact-information-iph3e0ca2db/ios)
+as a textual reference. These are selected examples, not installed-app reviews.
 
 ## What an agent should load
 

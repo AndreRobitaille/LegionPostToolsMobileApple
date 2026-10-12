@@ -3,7 +3,7 @@
   "title": "Reusable iOS design notes",
   "reviewed_on": "2026-10-12",
   "scope": "Reusable iOS source guidance and review criteria, independent of any one app. Pair with the target project application document.",
-  "evidence_status": "Selected source review only. Review checks are proposed, not executed. Individual Pttrns patterns have not been reviewed.",
+  "evidence_status": "Selected platform guidance and historical product examples only, not full app audits. Review checks are proposed. Individual Pttrns patterns have not been reviewed.",
   "maintenance": {
     "idle_review_after_days": 90,
     "refresh_triggers": [
@@ -308,6 +308,51 @@
         "No individual pattern, screenshot, flow, or collection has been reviewed.",
         "No reuse license for screenshots or template assets was established."
       ]
+    },
+    {
+      "id": "things-features",
+      "title": "Things: Features, Today and This Evening",
+      "url": "https://culturedcode.com/things/features/",
+      "authority": "product-creator-example",
+      "access_status": "public-selected-example-reviewed",
+      "reviewed_on": "2026-10-12",
+      "published_or_updated_on": null,
+      "date_basis": "The inspected iPhone asset URL contains 2017-05-18; page revision date was not established.",
+      "scope": "Historical iPhone Today screenshot, used for content hierarchy only. Not evidence of current OS appearance or installed behavior.",
+      "reviewed_sections": [
+        "Today and This Evening"
+      ],
+      "use": "Observe section headings, simple rows and a distinct creation control. Do not infer task workflow suitability for another domain."
+    },
+    {
+      "id": "day-one-journal-views",
+      "title": "Journal views in Day One for iOS",
+      "url": "https://dayoneapp.com/guides/tips-and-tutorials/journal-views-in-day-one-for-ios/",
+      "authority": "product-creator-example",
+      "access_status": "public-selected-example-reviewed",
+      "reviewed_on": "2026-10-12",
+      "published_or_updated_on": null,
+      "date_basis": "Inspected list screenshot is dated June 2024 in its asset path and contents; no page revision date established.",
+      "scope": "Historical iOS list example and its accompanying explanation; no installed-app behavior tested.",
+      "reviewed_sections": [
+        "List"
+      ],
+      "use": "Observe date grouping and compact entry rows. Other journal views are outside this selected observation."
+    },
+    {
+      "id": "apple-contacts-workflow",
+      "title": "Add and use contact information on iPhone",
+      "url": "https://support.apple.com/guide/iphone/add-and-use-contact-information-iph3e0ca2db/ios",
+      "authority": "platform-primary",
+      "access_status": "public-selected-section-reviewed",
+      "reviewed_on": "2026-10-12",
+      "published_or_updated_on": null,
+      "date_basis": "No publication date established.",
+      "scope": "Textual iPhone Contacts workflow guidance, not a visual inspection of the installed app.",
+      "reviewed_sections": [
+        "Quickly reach a contact"
+      ],
+      "use": "Keep communication actions adjacent to the person they act on; supported methods remain subject to app capabilities and permissions."
     }
   ],
   "guidance": [
@@ -591,6 +636,10 @@
         {
           "source_id": "apple-buttons",
           "section": "Role"
+        },
+        {
+          "source_id": "apple-buttons",
+          "section": "Best practices"
         }
       ],
       "applicability": {
@@ -599,7 +648,9 @@
       },
       "review_checks": [
         "Read action labels without surrounding instructions and verify their actual effect.",
-        "Inspect failed, pending, and completed states so a button response does not imply an unconfirmed result."
+        "Inspect failed, pending, and completed states so a button response does not imply an unconfirmed result.",
+        "Compare primary actions, navigation rows, choices and plain facts; similar styling must not conceal different behaviors.",
+        "Check that custom actions have visible press feedback and that primary emphasis is limited."
       ],
       "checks_status": "proposed-not-executed",
       "review_scope": "routine"
@@ -693,6 +744,69 @@
       "review_checks": [
         "Inspect delivered content for private information and compare it with the explicit project content policy.",
         "Check hidden previews, denial, duplicate or obsolete notifications, and the destination of notification actions on a device."
+      ],
+      "checks_status": "proposed-not-executed",
+      "review_scope": "routine"
+    },
+    {
+      "id": "ios-compact-activity",
+      "title": "Activity can use rows and date hierarchy instead of individual cards",
+      "kind": "observed-pattern",
+      "reviewed_on": "2026-10-12",
+      "tags": [
+        "layout",
+        "history",
+        "lists",
+        "hierarchy"
+      ],
+      "source_summary": "The selected Things Today example separates task groups with headings and simple rows. Day One’s selected list example organizes entries by date with light separators. Both distinguish creation from ordinary list content.",
+      "source_refs": [
+        {
+          "source_id": "things-features",
+          "section": "Today and This Evening"
+        },
+        {
+          "source_id": "day-one-journal-views",
+          "section": "List"
+        }
+      ],
+      "applicability": {
+        "platform": "iOS",
+        "version_note": "Historical screenshots inform structural comparison only. They do not establish current OS styling or prove usability in another app."
+      },
+      "review_checks": [
+        "Try grouping related records on one reading surface before giving each record a card.",
+        "Keep navigation cues distinct from selection marks and completion controls.",
+        "Check whether dates or categories help scanning without repeating unnecessary metadata."
+      ],
+      "checks_status": "proposed-not-executed",
+      "review_scope": "routine"
+    },
+    {
+      "id": "ios-person-action-proximity",
+      "title": "Put communication actions next to the person",
+      "kind": "workflow-reference",
+      "reviewed_on": "2026-10-12",
+      "tags": [
+        "people",
+        "contacts",
+        "buttons",
+        "workflow"
+      ],
+      "source_summary": "Apple’s Contacts guide places communication buttons below the contact’s name. The person is the context for those actions.",
+      "source_refs": [
+        {
+          "source_id": "apple-contacts-workflow",
+          "section": "Quickly reach a contact"
+        }
+      ],
+      "applicability": {
+        "platform": "iOS",
+        "version_note": "A workflow reference, not permission to expose unsupported contact methods or bypass eligibility."
+      },
+      "review_checks": [
+        "Keep the person identifiable beside contact actions.",
+        "Distinguish starting communication from recording an already completed interaction."
       ],
       "checks_status": "proposed-not-executed",
       "review_scope": "routine"

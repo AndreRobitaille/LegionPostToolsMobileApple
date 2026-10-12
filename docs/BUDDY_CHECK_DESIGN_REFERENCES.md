@@ -20,6 +20,40 @@ assistive-technology checks or accessibility audits unless explicitly requested.
 This overrides earlier review plans. Use focused UI tests that stay within this
 scope; the presence of a test or source recommendation does not authorize it.
 
+## Approved workflow and visual direction
+
+Andre’s later October 12 physical-phone feedback identifies ambiguous actions on
+Home and excessive rounded panels throughout the app. The current palette and
+shared person-card treatment are open for reconsideration. The proposed direction
+uses a single member chooser for search and suggestions, person-focused detail,
+a short recording flow, and an accepted receipt with a clear exit. This is a
+direction approved for SwiftUI implementation on October 12.
+
+Use `ios-explicit-actions`, `ios-compact-activity`, and
+`ios-person-action-proximity`. Give primary actions, secondary actions, navigation,
+choices and plain facts distinct treatments. Prefer compact activity rows and
+unboxed information where a card adds no meaning. A person monogram can identify
+someone without inventing portrait data; a calendar marker can carry the due date.
+Keep the app’s Legion identity without repeating a large navy person panel on
+every screen. Shared components must preserve those distinctions across connected and local
+practice journeys.
+
+His next review accepts the proposed typography and placement but finds the
+continuous white page too minimal. Keep that hierarchy while adding visual
+substance: the existing two-buddy artwork, broad section colors, a stronger member
+profile, and composed recording and confirmation surfaces. Prefer meaningful
+whole-section treatments to a rounded panel around each fact. Preserve the
+approved icon artwork itself and avoid invented portraits or filler copy.
+Andre approved this design for native implementation, including the compact
+Home masthead: artwork left, title/Post beside it, Account at right, and the first-use
+page symbol beside its heading.
+
+The job remains choosing a person, making contact, recording the result and
+following through. Home prioritizes pending submissions, unfinished checks and
+open follow-ups. A redesigned presentation must preserve the existing authority,
+draft, correction and receipt contracts. Prototype appearance does not establish
+SwiftUI behavior or physical-phone acceptance.
+
 ## Audience and task
 
 Help a caller choose someone, make contact, record what happened, and remember
@@ -35,8 +69,8 @@ permissions, introduce another roster database, or authorize outreach.
 
 Guidance IDs: `ios-adaptive-type`, `ios-touch-targets`, `ios-state-cues`.
 
-Preserve native text styles, the shared title2-bold person header, and flexible
-control height of at least 48 points. Check hit width separately. These dimensions
+Preserve native text styles, a distinct member profile and compact form context,
+and flexible primary control height of at least 48 points. Check hit width separately. These dimensions
 are project choices; the source library records Apple's guidance in its own terms.
 Use words and selection indicators as well as color.
 
@@ -56,8 +90,8 @@ Home and Follow-ups remain the primary destinations, with separate navigation
 stacks and unfinished-work context. Account and Post settings use the person
 icon. Call and save are explicit actions rather than tabs.
 
-Retain navy identity/navigation, white working surfaces, grey canvas, and blue
-actions. Inspect the native scroll-edge treatment near floating tabs. Keep lower
+Use navy identity/actions, mist canvas, white working sections, gold conversation
+help and green accepted confirmation. Inspect the native scroll-edge treatment near floating tabs. Keep lower
 actions readable and able to scroll fully clear; article screenshots do not
 establish fixed native insets or authorize a visual redesign.
 

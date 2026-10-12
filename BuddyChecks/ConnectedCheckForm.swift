@@ -28,26 +28,27 @@ struct ConnectedCheckForm: View {
 
     private var pending: Bool { account.journal?.snapshot.pending != nil }
     var body: some View {
-        Page(scrollResetID: receipt?.operationId.uuidString ?? (pending ? "pending" : draft?.id.uuidString), spacing: 16, topPadding: 16) {
-            if let card { PersonCard(name: card.name) }
+        Page(scrollResetID: receipt?.operationId.uuidString ?? (pending ? "pending" : draft?.id.uuidString), spacing: 0, topPadding: 0) {
             if let receipt { confirmation(receipt) }
             else if let draft {
                 if pending { recovery }
-                details(draft).disabled(busy || pending)
-                outcomes(draft).disabled(busy || pending)
-                WorkingSurface {
+                SectionBand(color: Palette.context, spacing: 10, verticalPadding: 12) {
+                    if let card { PersonCard(name: card.name) }
+                    details(draft)
+                }.disabled(busy || pending)
+                VStack(alignment: .leading, spacing: 0) {
+                    outcomes(draft)
+                    Divider().padding(.vertical, 8)
                     DisclosureGroup(isExpanded: $showingNotes) {
                         TextField("Your check notes (optional)", text: binding(draft, \.notes), axis: .vertical)
-                            .lineLimit(3...8).focused($notesFocused)
-                    } label: { Text(draft.notes.isEmpty ? "Add a note" : "Note added").font(.body) }
-                }.disabled(busy || pending)
-                if draft.correction == nil { followUp(draft).disabled(busy || pending) }
-                if !pending {
-                    Button("Discard unfinished check", role: .destructive) { discard = true }
-                        .frame(minHeight: 48).foregroundStyle(Palette.red).disabled(busy)
-                }
+                            .lineLimit(3...8).focused($notesFocused).padding(.vertical, 12)
+                    } label: { Text(draft.notes.isEmpty ? "Add a note" : "Note added").font(.body).padding(.vertical, 4) }
+                    if draft.correction == nil { Divider().padding(.vertical, 6); followUp(draft) }
+                }.padding(12).background(Palette.surface)
+                    .overlay(alignment: .top) { Rectangle().fill(Palette.border).frame(height: 3) }
+                    .padding(.horizontal, -8).padding(.top, 16).disabled(busy || pending)
             }
-            if let error { Text(error).foregroundStyle(Palette.red) }
+            if let error { Text(error).foregroundStyle(Palette.red).padding(.vertical, 16) }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if receipt == nil, let draft, !pending {
@@ -61,10 +62,19 @@ struct ConnectedCheckForm: View {
                             .font(.headline).foregroundStyle(Palette.action).frame(minWidth: 52, minHeight: 48)
                     }
                 }.padding(.horizontal, 24).padding(.vertical, 12)
-                    .background(Palette.surface)
+                    .background(Palette.canvas)
             }
         }
         .navigationTitle(receipt != nil ? "Check saved" : (draft?.correction == nil ? "Record a check" : "Correct check"))
+        .toolbar {
+            if receipt == nil && !pending {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu("Check options", systemImage: "ellipsis") {
+                        Button("Discard unfinished check", role: .destructive) { discard = true }.disabled(busy)
+                    }
+                }
+            }
+        }
         .scrollDismissesKeyboard(.interactively)
         .navigationDestination(isPresented: $reviewingCorrection) {
             ConnectedCorrectionReview(account: account) { replacement in
@@ -91,7 +101,7 @@ struct ConnectedCheckForm: View {
     }
 
     private func details(_ draft: ConnectedDraft) -> some View {
-        WorkingSurface {
+        VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(channelText(draft.channel.rawValue)).font(.headline)
@@ -99,7 +109,7 @@ struct ConnectedCheckForm: View {
                          ?? connectedDateText(draft.occurredAt, zone: draft.entryZone)).font(.subheadline)
                 }
                 Spacer()
-                Button(editingDetails ? "Done" : "Edit") { editingDetails.toggle() }.frame(minHeight: 44).foregroundStyle(Palette.action)
+                Button(editingDetails ? "Done" : "Edit") { editingDetails.toggle() }.buttonStyle(.bordered).buttonBorderShape(.capsule)
             }
             if editingDetails {
                 Picker("Contact method", selection: binding(draft, \.channel)) {
@@ -116,30 +126,25 @@ struct ConnectedCheckForm: View {
     }
 
     private func outcomes(_ draft: ConnectedDraft) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("What happened?").font(.headline)
+        VStack(alignment: .leading, spacing: 8) {
+            Text("What happened?").font(.title2.bold())
             VStack(spacing: 0) {
                 ForEach(CheckResult.allCases, id: \.self) { outcome in
-                    if outcome != CheckResult.allCases.first { Divider().padding(.leading, 16) }
                     Button {
                         var next = draft; next.outcome = outcome; saveDraft(next)
                     } label: {
-                        HStack {
+                        HStack(spacing: 12) {
+                            Image(systemName: draft.outcome == outcome ? "checkmark.circle.fill" : "circle").font(.title3)
                             Text(outcomeText(outcome.rawValue))
-                            Spacer()
-                            Image(systemName: draft.outcome == outcome ? "checkmark.circle.fill" : "circle")
-                        }.font(.body).padding(.horizontal, 16).frame(minHeight: 48)
-                            .foregroundStyle(draft.outcome == outcome ? Palette.actionInk : Palette.ink)
-                            .background(draft.outcome == outcome ? Palette.actionSurface : Palette.surface)
-                            .contentShape(Rectangle())
-                    }.buttonStyle(.plain)
+                        }
+                    }.buttonStyle(ChoiceStyle(selected: draft.outcome == outcome))
                 }
-            }.clipShape(RoundedRectangle(cornerRadius: 16))
+            }
         }
     }
 
     private func followUp(_ draft: ConnectedDraft) -> some View {
-        WorkingSurface {
+        VStack(alignment: .leading, spacing: 12) {
             Toggle("Set a follow-up", isOn: Binding(get: { draft.followUp != nil }, set: { on in
                 var next = draft
                 next.followUp = on ? try? FollowUpTime(dueAt: Date().addingTimeInterval(86400), entryZone: TimeZone.current.identifier) : nil
@@ -179,30 +184,35 @@ struct ConnectedCheckForm: View {
     }
 
     private func confirmation(_ receipt: MutationReceipt) -> some View {
-        VStack(alignment: .leading, spacing: 20) {
-            WorkingSurface {
-                Label("Saved to the Post", systemImage: "checkmark.circle.fill").font(.headline).foregroundStyle(Palette.navy)
+        VStack(alignment: .leading, spacing: 0) {
+            ConfirmationHeading(title: "Saved to the Post", name: card?.name ?? "Buddy Check")
+            VStack(alignment: .leading, spacing: 4) {
                 if let record = receipt.contact {
-                    Text(outcomeText(record.outcome)).font(.title2.bold())
-                    Text(channelText(record.channel) + " · " + contactTimeText(record)).font(.subheadline)
+                    ReceiptRow(title: "Outcome", value: outcomeText(record.outcome))
+                    ReceiptRow(title: "Contact", value: channelText(record.channel) + " · " + contactTimeText(record))
                 }
-                Text("The Post confirmed your Buddy Check.").font(.subheadline).foregroundStyle(.secondary)
-            }
-            if let followUp = receipt.followUp {
-                WorkingSurface {
-                    Text("Follow-up saved").font(.headline)
-                    Text(connectedDateText(followUp.dueAt, zone: followUp.entryZone))
-                    Text(account.reminders?.status(followUp.id).label ?? "Phone alert status unavailable.")
-                        .font(.subheadline).foregroundStyle(.secondary)
-                    NavigationLink("View follow-up") {
-                        ConnectedFollowUpDetail(account: account, initial: followUp)
-                    }.buttonStyle(ActionStyle(primary: false))
+                Text("The Post confirmed your Buddy Check.").font(.footnote).foregroundStyle(.secondary).padding(.vertical, 12)
+                if let followUp = receipt.followUp {
+                    HStack(alignment: .top, spacing: 14) {
+                        CalendarStamp(date: followUp.dueAt, zone: followUp.entryZone)
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Follow-up saved").font(.headline)
+                            Text(connectedDateText(followUp.dueAt, zone: followUp.entryZone)).font(.subheadline)
+                            Text(account.reminders?.status(followUp.id).label ?? "Phone alert status unavailable.")
+                                .font(.footnote).foregroundStyle(.secondary)
+                        }
+                    }.padding(.vertical, 10)
+                    NavigationLink("View follow-up") { ConnectedFollowUpDetail(account: account, initial: followUp) }
+                        .buttonStyle(ActionStyle(primary: false)).padding(.bottom, 14)
                 }
-            }
+            }.padding(.horizontal, 18).background(.white)
+                .overlay(alignment: .bottom) { Rectangle().fill(Palette.border).frame(height: 1) }
+                .padding(.bottom, 24)
             Button("Back to Home", action: navigation.returnHome).buttonStyle(ActionStyle())
             if let record = receipt.contact {
                 Button("Correct this check") { Task { await correct(record) } }
-                    .frame(maxWidth: .infinity, minHeight: 48).foregroundStyle(Palette.action).disabled(busy || account.journal?.snapshot.draft != nil || pending)
+                    .frame(maxWidth: .infinity, minHeight: 48).foregroundStyle(Palette.action)
+                    .disabled(busy || account.journal?.snapshot.draft != nil || pending)
             }
         }
     }

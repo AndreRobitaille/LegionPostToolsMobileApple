@@ -20,10 +20,16 @@ handoffs and operational verification records are retained privately.
 
 ## Native navigation and visual direction
 
-- Preserve the restrained 1919 direction: navy identity/navigation, white working
-  surfaces, grey canvas, blue actions, native text styles, and labelled large controls.
+- Use the approved October 12 workflow design: navy identity and capsule actions,
+  mist canvas, broad white working sections, gold conversation help and green
+  accepted confirmation. Use native text styles and labelled controls; navigation
+  rows and outcome choices do not inherit button-shaped containers.
 - Home and Follow-ups are the main tabs. The person icon opens Account and Post settings.
-- Use one shared title2-bold person header with 20-point padding and Dynamic Type.
+- Home places the approved buddy artwork left of the title and Post identity,
+  with Account at right. First-use/status symbols sit beside their headings.
+  Member details use a navy profile; forms use compact person context with initials.
+- Choose a member combines search and suggestions in one destination. Browsing
+  suggestions never creates a draft or authorizes a contact attempt.
 - On newer supported iOS versions, use the native hard bottom scroll-edge treatment
   to keep lower actions legible near floating tabs. Prioritize standard-size screens.
 - Use the approved visible-hand Icon Composer asset already included in the app.
@@ -39,7 +45,7 @@ handoffs and operational verification records are retained privately.
   summaries remain in memory; only displayed people are resolved, and failed
   reads never claim there is no work. Hidden suggestions lives in Suggest someone.
 - Member and follow-up screens lead with contact/recording actions. Conversation
-  help is expandable; Contacts, refresh and phone-alert controls are secondary.
+  help uses a short gold section; Contacts, refresh and phone-alert controls are secondary.
 
 ## Design review scope
 

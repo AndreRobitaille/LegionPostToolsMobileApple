@@ -12,7 +12,7 @@ struct ConnectedMainView: View {
         @Bindable var navigation = navigation
         TabView(selection: $navigation.tab) {
             NavigationStack {
-                ConnectedHome(account: account, session: session).toolbar { settingsButton }
+                ConnectedHome(account: account, session: session, openSettings: openSettings)
             }.id(navigation.homeIdentity).tabItem { Label("Home", systemImage: "house") }.tag(0)
             NavigationStack {
                 ConnectedFollowUps(account: account).toolbar { settingsButton }
@@ -33,6 +33,7 @@ struct ConnectedMainView: View {
 struct ConnectedHome: View {
     let account: ConnectedAccount
     let session: MobileSession
+    let openSettings: () -> Void
     @State private var route: ConnectedRoute?
     @State private var error: String?
     @State private var busy = false
@@ -43,11 +44,11 @@ struct ConnectedHome: View {
     @State private var readingReminder = false
     @State private var reminderError: String?
     var body: some View {
-        Page {
-            Text(session.installation.name).font(.title2.bold()).foregroundStyle(Palette.navy)
+        Page(spacing: 0, topPadding: 0, decorated: true) {
+            BuddyMasthead(post: session.installation.name, openSettings: openSettings)
             if let journal = account.journal {
                 if journal.snapshot.pending != nil {
-                    WorkingSurface {
+                    SectionBand(color: Palette.context) {
                         SectionTitle(journal.rejection == nil ? "Submission pending" : "Submission not saved")
                         Text(journal.rejection == nil
                              ? "The Post has not confirmed this submission on your iPhone. Check its status before starting another."
@@ -68,17 +69,11 @@ struct ConnectedHome: View {
                     }
                 } else if let draft = journal.snapshot.draft {
                     ConnectedDraftAction(account: account, draft: draft) { route = .draft }
-                } else {
-                    Button { route = .search } label: {
-                        ActionRow(title: "Check on someone", subtitle: "Search the Post member list")
-                    }.buttonStyle(ActionStyle())
-                    Button { route = .suggestion } label: {
-                        ActionRow(title: "Suggest someone", subtitle: "From Post records")
-                    }.buttonStyle(.plain).foregroundStyle(Palette.action).frame(minHeight: 48)
                 }
             }
-            ConnectedHomeActivity(account: account)
+            ConnectedHomeActivity(account: account, showsNext: account.journal?.snapshot.draft == nil && account.journal?.snapshot.pending == nil) { route = .search }
         }.navigationTitle("Buddy Checks")
+            .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(item: $route) { route in
                 switch route {
                 case .search: ConnectedSearch(account: account)
@@ -147,22 +142,35 @@ private struct ConnectedSearch: View {
     @State private var error: String?
     @State private var selected: Int?
     var body: some View {
-        Page {
-            SectionTitle("Who will you check on?")
-            TextField("Search by first or last name", text: $query).textFieldStyle(.roundedBorder)
-                .accessibilityLabel("Search by name").frame(minHeight: 48).submitLabel(.search)
-                .onSubmit { Task { await search() } }
-            Button(busy ? "Searching…" : "Search") { Task { await search() } }.buttonStyle(ActionStyle())
-                .disabled(busy || query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2)
-            if let error { Text(error) }
-            if searched && people.isEmpty && error == nil { Text("No matching members. Try a first or last name.") }
-            ForEach(people) { person in
-                Button { selected = person.id } label: { ActionRow(title: person.name) }.buttonStyle(RowActionStyle())
+        Page(spacing: 0, topPadding: 0) {
+            SectionBand(color: Palette.context) {
+                Text("Who’s on your mind?").font(.title.bold())
+                TextField("First or last name", text: $query).textFieldStyle(.plain)
+                    .padding(13).background(.white, in: RoundedRectangle(cornerRadius: 12))
+                    .accessibilityLabel("Search by name").submitLabel(.search)
+                    .onSubmit { Task { await search() } }
+                Button(busy ? "Searching…" : "Search") { Task { await search() } }.buttonStyle(ActionStyle(primary: false))
+                    .disabled(busy || query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2)
             }
-            if let cursor {
-                Button("More results") { Task { await search(cursor: cursor) } }.buttonStyle(ActionStyle(primary: false)).disabled(busy)
+            if searched || error != nil {
+                SectionBand {
+                    SectionTitle("Search results")
+                    if let error { Text(error) }
+                    if searched && people.isEmpty && error == nil { Text("No matching members. Try a first or last name.") }
+                    ForEach(people) { person in
+                        Button { selected = person.id } label: {
+                            HStack(spacing: 12) { PersonAvatar(name: person.name, size: 42); ActionRow(title: person.name) }
+                        }.buttonStyle(RowActionStyle())
+                    }
+                    if let cursor {
+                        Button("More results") { Task { await search(cursor: cursor) } }.buttonStyle(ActionStyle(primary: false)).disabled(busy)
+                    }
+                    Button("Browse suggestions") { searched = false; error = nil; query = "" }.buttonStyle(ActionStyle(primary: false))
+                }
+            } else {
+                ConnectedSuggestion(account: account, embedded: true)
             }
-        }.navigationTitle("Member search")
+        }.navigationTitle("Choose a member")
             .navigationDestination(item: $selected) { ConnectedPerson(account: account, personID: $0) }
     }
     private func search(cursor: String? = nil) async {
@@ -178,29 +186,40 @@ private struct ConnectedSearch: View {
 
 private struct ConnectedSuggestion: View {
     let account: ConnectedAccount
+    var embedded = false
     @State private var suggestion: SuggestionResponse?
     @State private var skipped: [Int] = []
     @State private var selected: Int?
     @State private var error: String?
     @State private var busy = false
     var body: some View {
-        Page {
+        Group {
+            if embedded { content }
+            else { Page(spacing: 0, topPadding: 0) { content } }
+        }.navigationTitle(embedded ? "Choose a member" : "Suggested member").task { await load() }
+            .navigationDestination(item: $selected) { ConnectedPerson(account: account, personID: $0) }
+    }
+    private var content: some View {
+        SectionBand(color: Palette.paper.opacity(0.5), spacing: 12) {
+            Label("Suggested by the Post", systemImage: "star").font(.title3.bold())
             if let suggestion, let person = suggestion.person, suggestion.state == .candidate {
-                PersonCard(name: person.name)
-                Text(suggestion.reason == "two_recorded_absences" ? "Recorded absent at the last two covered Post meetings." : "Their most recent recorded Buddy Check is older.")
-                if let date = suggestion.reasonOn { Text("Record date: \(date)").font(.subheadline) }
-                Button("Check on \(person.firstName)") { selected = person.id }.buttonStyle(ActionStyle()).disabled(busy)
+                Button { selected = person.id } label: {
+                    HStack(spacing: 12) {
+                        PersonAvatar(name: person.name, size: 42)
+                        ActionRow(title: person.name, subtitle: suggestion.reason == "two_recorded_absences" ? "Recorded absent at the last two covered Post meetings." : "Their most recent recorded Buddy Check is older.")
+                    }
+                }.buttonStyle(RowActionStyle()).disabled(busy)
+                if let date = suggestion.reasonOn { Text("Record date: \(date)").font(.footnote).foregroundStyle(.secondary) }
                 Button("Someone else") { skipped.append(person.id); Task { await load() } }.buttonStyle(ActionStyle(primary: false)).disabled(busy || skipped.count >= 50)
-
             } else if let suggestion {
-                SectionTitle(suggestion.state == .insufficientHistory ? "More history is needed" : "No suggestion right now")
-                Text(suggestion.state == .insufficientHistory ? "The Post has too little recorded history to suggest someone confidently." : "No eligible member is available with the current exclusions.")
+                Text(suggestion.state == .insufficientHistory ? "More history is needed" : "No suggestion right now").font(.headline)
+                Text(suggestion.state == .insufficientHistory ? "The Post has too little recorded history to suggest someone confidently." : "No eligible member is available with the current exclusions.").font(.subheadline)
                 if suggestion.state == .insufficientHistory, let people = suggestion.randomCandidates, !people.isEmpty {
-                    Text("A few people you could check on").font(.headline)
                     Text("Picked at random from eligible members.").font(.subheadline)
                     ForEach(people) { person in
-                        Button { selected = person.id } label: { ActionRow(title: person.name) }
-                            .buttonStyle(RowActionStyle()).disabled(busy)
+                        Button { selected = person.id } label: {
+                            HStack(spacing: 12) { PersonAvatar(name: person.name, size: 42); ActionRow(title: person.name) }
+                        }.buttonStyle(RowActionStyle()).disabled(busy)
                             .accessibilityLabel("Check on \(person.name)")
                     }
                 }
@@ -210,10 +229,9 @@ private struct ConnectedSuggestion: View {
             }
             if let error { Text(error) }
             if busy { ProgressView("Checking Post records") }
-            NavigationLink("Hidden suggestions") { ConnectedSnoozes(account: account) }.frame(minHeight: 48)
-            if !busy { Button("Refresh suggestion") { Task { await load() } }.buttonStyle(ActionStyle(primary: false)) }
-        }.navigationTitle("Suggested member").task { await load() }
-            .navigationDestination(item: $selected) { ConnectedPerson(account: account, personID: $0) }
+            NavigationLink { ConnectedSnoozes(account: account) } label: { ActionRow(title: "Hidden suggestions") }.buttonStyle(RowActionStyle())
+            if error != nil && !busy { Button("Refresh suggestion") { Task { await load() } }.buttonStyle(ActionStyle(primary: false)) }
+        }
     }
     private func load() async {
         guard !busy else { return }; busy = true; error = nil; suggestion = nil; defer { busy = false }
@@ -231,14 +249,12 @@ private struct ConnectedPerson: View {
     @State private var showDraft = false
     @State private var busy = false
     var body: some View {
-        Page {
+        Page(spacing: 0, topPadding: 0) {
             if let card {
-                PersonCard(name: card.name)
-                if !card.eligibility.eligible {
-                    Text(eligibilityText(card.eligibility.reason))
-                }
-                if let phone = card.phone {
-                    Text(phone).textSelection(.enabled)
+                MemberProfile(name: card.name, subtitle: account.session?.installation.name ?? "")
+                SectionBand {
+                    if !card.eligibility.eligible { Text(eligibilityText(card.eligibility.reason)) }
+                    if card.phone != nil {
                     #if !targetEnvironment(simulator)
                     Button("Call \(card.firstName)") {
                         Task {
@@ -252,26 +268,26 @@ private struct ConnectedPerson: View {
                         }
                     }.buttonStyle(ActionStyle()).disabled(busy || !card.eligibility.eligible)
                     #endif
-                }
-                Button("Record a check") { begin() }.buttonStyle(ActionStyle())
-                    .disabled(busy || card.eligibility.reason == "contact_paused" || account.journal?.snapshot.pending != nil)
-                if card.exportAvailable {
-                    NavigationLink("Phone contact") { ConnectedContactsScreen(account: account, personID: personID) }
-                        .frame(minHeight: 48)
-                }
-                if card.eligibility.eligible {
-                    WorkingSurface {
-                        DisclosureGroup("A way to start") {
-                            Text("“Hi \(card.firstName), I'm checking in from the Post. How have you been?”")
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
+                    }
+                    Button("Record a check") { begin() }.buttonStyle(ActionStyle(primary: card.phone == nil))
+                        .disabled(busy || card.eligibility.reason == "contact_paused" || account.journal?.snapshot.pending != nil)
+                    if let phone = card.phone {
+                        HStack { Text(phone).textSelection(.enabled); Spacer(); Text("Phone").font(.subheadline).foregroundStyle(.secondary) }
+                            .padding(.top, 10)
                     }
                 }
+                if card.eligibility.eligible { ConversationPrompt(firstName: card.firstName) }
+                if card.exportAvailable {
+                    NavigationLink { ConnectedContactsScreen(account: account, personID: personID) } label: {
+                        ActionRow(title: "Phone contact", subtitle: "Add or review contact details")
+                    }.buttonStyle(RowActionStyle())
+                }
             }
-            if let error { Text(error) }
-            if busy { ProgressView("Checking member access") }
+            if let error { Text(error).padding(.vertical, 16) }
+            if busy { ProgressView("Checking member access").padding(.vertical, 16) }
             if !busy { Button("Refresh member", systemImage: "arrow.clockwise") { Task { await load() } }.frame(minHeight: 48) }
         }.navigationTitle("Buddy Check").task { await load() }
+            .toolbarBackground(Palette.navy, for: .navigationBar).toolbarColorScheme(.dark, for: .navigationBar)
             .navigationDestination(isPresented: $showDraft) { ConnectedCheckForm(account: account) }
     }
     private func begin() {
@@ -497,40 +513,52 @@ struct ConnectedFollowUpDetail: View {
     @State private var busy = false
     @State private var error: String?
     var body: some View {
-        Page {
-            if let name { PersonCard(name: name) }
+        Page(spacing: 0, topPadding: 0) {
             if let record = updated {
-                if reminderChanged {
-                    Text("This follow-up changed after the reminder was scheduled. Its current details are shown.")
+                SectionBand(color: Palette.context) {
+                    if let name { PersonCard(name: name) }
+                    if reminderChanged { Text("This follow-up changed after the reminder was scheduled. Its current details are shown.") }
+                    HStack(spacing: 14) {
+                        CalendarStamp(date: record.dueAt, zone: record.entryZone)
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(connectedDateText(record.dueAt, zone: record.entryZone)).font(.headline)
+                            Text(record.status.rawValue.capitalized).font(.subheadline).foregroundStyle(.secondary)
+                        }
+                        Spacer(minLength: 0)
+                        if record.status == .open && !rescheduling {
+                            Button("Reschedule") { due = max(record.dueAt, Date().addingTimeInterval(3600)); rescheduling = true }
+                                .buttonStyle(.bordered).buttonBorderShape(.capsule)
+                                .disabled(busy || account.journal?.snapshot.pending != nil)
+                        }
+                    }
+                    if record.status == .open {
+                        if rescheduling {
+                            DateTimeFields(selection: $due, future: true).environment(\.timeZone, TimeZone(identifier: record.entryZone) ?? .current)
+                            Text(timeZoneText(record.entryZone)).font(.footnote)
+                            Button("Save new follow-up time") { Task {
+                                do { await change(.reschedule(try FollowUpTime(dueAt: due, entryZone: record.entryZone))) }
+                                catch { self.error = safeMessage(error) }
+                            } }.buttonStyle(ActionStyle()).disabled(busy || account.journal?.snapshot.pending != nil)
+                        }
+                        NavigationLink("Check on this member") { ConnectedPerson(account: account, personID: record.personId) }.buttonStyle(ActionStyle())
+                    }
                 }
-                Text(dateText(record.dueAt)).font(.title2.bold())
-                Text(record.status.rawValue.capitalized)
                 if record.status == .open {
-                    NavigationLink("Check on this member") { ConnectedPerson(account: account, personID: record.personId) }.buttonStyle(ActionStyle())
-                    Button("Mark follow-up complete") { Task { await change(.complete) } }.buttonStyle(ActionStyle(primary: false))
-                        .disabled(busy || account.journal?.snapshot.pending != nil)
-                    if rescheduling {
-                        DateTimeFields(selection: $due, future: true).environment(\.timeZone, TimeZone(identifier: record.entryZone) ?? .current)
-                        Text(timeZoneText(record.entryZone)).font(.footnote)
-                        Button("Save new follow-up time") { Task {
-                            do { await change(.reschedule(try FollowUpTime(dueAt: due, entryZone: record.entryZone))) }
-                            catch { self.error = safeMessage(error) }
-                        } }.buttonStyle(ActionStyle()).disabled(busy || account.journal?.snapshot.pending != nil)
-                    } else {
-                        Button("Reschedule") { due = max(record.dueAt, Date().addingTimeInterval(3600)); rescheduling = true }
-                            .buttonStyle(ActionStyle(primary: false)).disabled(busy || account.journal?.snapshot.pending != nil)
-                    }
-                    Button("Cancel follow-up", role: .destructive) { cancelling = true }.foregroundStyle(Palette.red).frame(minHeight: 48)
-                        .disabled(busy || account.journal?.snapshot.pending != nil)
-                    Text("Completing a follow-up does not record a Buddy Check. Record what happened separately.").font(.footnote)
                     if let reminders = account.reminders {
-                        WorkingSurface { ConnectedReminderControls(record: record, reminders: reminders) }
+                        SectionBand { ConnectedReminderControls(record: record, reminders: reminders) }
                     }
+                    VStack(alignment: .leading, spacing: 12) {
+                        Button("Mark follow-up complete") { Task { await change(.complete) } }.buttonStyle(ActionStyle(primary: false))
+                            .disabled(busy || account.journal?.snapshot.pending != nil)
+                        Text("Completing a follow-up does not record a Buddy Check. Record what happened separately.").font(.footnote).foregroundStyle(.secondary)
+                        Button("Cancel follow-up", role: .destructive) { cancelling = true }.foregroundStyle(Palette.red).frame(minHeight: 48)
+                            .disabled(busy || account.journal?.snapshot.pending != nil)
+                    }.padding(.top, 22)
                 }
             }
-            if let error { Text(error) }
+            if let error { Text(error).padding(.vertical, 16) }
             Button(busy ? "Loading…" : "Refresh follow-up") { Task { await load() } }
-                .buttonStyle(ActionStyle(primary: false)).disabled(busy)
+                .font(.subheadline).frame(minHeight: 48).disabled(busy)
         }.navigationTitle("Follow-up")
             .task { await load() }
             .confirmationDialog("Cancel this follow-up?", isPresented: $cancelling, titleVisibility: .visible) {

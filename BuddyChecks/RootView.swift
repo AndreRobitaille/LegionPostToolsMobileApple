@@ -30,7 +30,7 @@ struct RootView: View {
         get { tab == .home ? homePath : followUpPath }
         nonmutating set { if tab == .home { homePath = newValue } else { followUpPath = newValue } }
     }
-    private var openFollowUps: [FollowUp] { store.followUps.filter { $0.status == .open } }
+    private var openFollowUps: [FollowUp] { store.followUps.filter { $0.status == .open }.sorted { $0.due < $1.due } }
 
     var body: some View {
         PostConnectionRoot(showLocalReminder: $showLocalReminder) { openSettings, returnToPost in
@@ -45,8 +45,7 @@ struct RootView: View {
             } else {
                 TabView(selection: $tab) {
                     NavigationStack(path: $homePath) {
-                        home(openSettings: openSettings).navigationDestination(for: Route.self, destination: destination)
-                            .toolbar { if let returnToPost { ToolbarItem(placement: .topBarLeading) { Button("Back to Post", action: returnToPost) } } }
+                        home(openSettings: openSettings, returnToPost: returnToPost).navigationDestination(for: Route.self, destination: destination)
                     }.tabItem { Label("Home", systemImage: "house") }.tag(MainTab.home)
                     NavigationStack(path: $followUpPath) {
                         followUpList.navigationDestination(for: Route.self, destination: destination)
@@ -135,40 +134,47 @@ struct RootView: View {
     }
     private func goHome() { tab = .home; homePath = [] }
 
-    private func home(openSettings: @escaping () -> Void) -> some View {
-        Page {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(post.shortName).font(.largeTitle.bold()).foregroundStyle(Palette.navy)
-                Text("\(post.fullName) · \(post.location)").font(.subheadline)
-            }
-            if let draft = store.draft, let person = store.person(draft.personID) {
-                WorkingSurface {
-                    Label("Unfinished check", systemImage: "pencil").font(.subheadline)
-                    Text(person.name).font(.title2.bold())
+    private func home(openSettings: @escaping () -> Void, returnToPost: (() -> Void)?) -> some View {
+        Page(spacing: 0, topPadding: 0, decorated: true) {
+            BuddyMasthead(post: post.shortName, openSettings: openSettings)
+            if let returnToPost { Button("Back to Post", action: returnToPost).frame(minHeight: 48) }
+            SectionBand(color: Palette.context) {
+                if let draft = store.draft, let person = store.person(draft.personID) {
+                    Text("Unfinished check").font(.subheadline)
+                    PersonCard(person: person)
                     Button("Continue with \(person.firstName)") { path = [.draft] }.buttonStyle(ActionStyle())
+                } else {
+                    if let item = openFollowUps.first, let person = store.person(item.personID) {
+                        Text("Next follow-up").font(.subheadline)
+                        PersonCard(person: person)
+                        Text(dateText(item.due)).font(.subheadline)
+                        Button("Open follow-up") { path.append(.followUp(item.id)) }.buttonStyle(ActionStyle())
+                    } else {
+                        PageInvitation(title: store.checks.isEmpty ? "Your first Buddy Check" : "Who will you check on?",
+                                       detail: "Find someone by name, or try a suggested person.")
+                    }
+                    Button("Choose a member") { search = ""; path.append(.people(manual: false)) }
+                        .buttonStyle(ActionStyle(primary: openFollowUps.isEmpty))
+                }
+                Text("Practice with synthetic people. No calls are placed.").font(.footnote).foregroundStyle(.secondary)
+            }
+            SectionBand(spacing: 10) {
+                HStack {
+                    SectionTitle("Recent checks")
+                    Spacer()
+                    Button("Your checks") { path.append(.history) }.font(.subheadline).buttonStyle(.bordered).buttonBorderShape(.capsule)
+                }
+                if store.checks.isEmpty { Text("Your saved checks will appear here.").foregroundStyle(.secondary) }
+                ForEach(Array(store.checks.sorted { $0.updatedAt > $1.updatedAt }.prefix(3))) { check in
+                    Button { path.append(.check(check.id)) } label: {
+                        HStack(spacing: 12) {
+                            PersonAvatar(name: store.person(check.personID)?.name ?? "?", size: 41)
+                            ActionRow(title: store.person(check.personID)?.name ?? "Person unavailable", subtitle: check.outcome.label(for: check.method) + " · " + dateText(check.occurredAt))
+                        }
+                    }.buttonStyle(RowActionStyle())
                 }
             }
-            VStack(spacing: 12) {
-                // Browsing a person or their Contacts card must not discard an unfinished check.
-                Button { search = ""; path.append(.people(manual: false)) } label: { Label("Check on someone", systemImage: "phone.fill") }
-                    .buttonStyle(ActionStyle(primary: store.draft == nil))
-                Button { path.append(.suggestions) } label: { Label("Suggest someone", systemImage: "person.crop.circle.badge.questionmark") }
-                    .buttonStyle(ActionStyle(primary: false))
-                Button { request(.people(true)) } label: { Label("Record a check", systemImage: "square.and.pencil") }
-                    .buttonStyle(ActionStyle(primary: false))
-            }
-            VStack(alignment: .leading, spacing: 12) {
-                SectionTitle("My follow-ups")
-                if let item = openFollowUps.first { followUpButton(item) }
-                else { Text("No follow-ups right now.") }
-            }
-            Button { path.append(.history) } label: {
-                ActionRow(title: "Recent checks", subtitle: store.checks.isEmpty ? "No checks recorded yet" : "\(store.checks.count) saved on this iPhone")
-            }.buttonStyle(RowActionStyle())
-        }.navigationTitle("Buddy Checks")
-            .toolbar { ToolbarItem(placement: .topBarTrailing) {
-                Button("Account and Post settings", systemImage: "person.crop.circle", action: openSettings)
-            } }
+        }.navigationTitle("Buddy Checks").toolbar(.hidden, for: .navigationBar)
     }
 
     @ViewBuilder private func destination(_ route: Route) -> some View {
@@ -187,52 +193,55 @@ struct RootView: View {
         }
     }
     private func people(manual: Bool) -> some View {
-        Page {
-            SectionTitle(manual ? "Who did you check on?" : "Who will you check on?")
-            if !manual {
-                Button("Suggest someone") { path.append(.suggestions) }.buttonStyle(ActionStyle(primary: false))
+        Page(spacing: 0, topPadding: 0) {
+            SectionBand(color: Palette.context) {
+                Text(manual ? "Who did you check on?" : "Who’s on your mind?").font(.title.bold())
+                TextField("Search by name", text: $search)
+                    .textFieldStyle(.plain).frame(minHeight: 48).padding(.horizontal, 14)
+                    .background(Palette.surface, in: RoundedRectangle(cornerRadius: 12))
+                    .accessibilityLabel("Search by name")
+                if !manual { Button("Suggest someone") { path.append(.suggestions) }.buttonStyle(ActionStyle(primary: false)) }
             }
-            TextField("Search by name", text: $search, prompt: Text("Search by name").foregroundStyle(Palette.ink.opacity(0.75)))
-                .textFieldStyle(.plain).frame(minHeight: 48).padding(.horizontal, 14)
-                .background(Palette.surface, in: RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Palette.border, lineWidth: 1))
-                .accessibilityLabel("Search by name")
-            let matches = store.people.filter { search.isEmpty || $0.name.localizedCaseInsensitiveContains(search) }
-            if matches.isEmpty {
-                Text("No matching names. Try a first or last name.")
-                Button("Clear search") { search = "" }.buttonStyle(ActionStyle(primary: false))
-            }
-            VStack(spacing: 12) {
+            SectionBand(spacing: 0) {
+                let matches = store.people.filter { search.isEmpty || $0.name.localizedCaseInsensitiveContains(search) }
+                if matches.isEmpty {
+                    Text("No matching names. Try a first or last name.")
+                    Button("Clear search") { search = "" }.buttonStyle(ActionStyle(primary: false))
+                }
                 ForEach(matches) { person in
                     Button {
                         if manual { request(.start(person.id, .manual)) } else { path.append(.person(person.id)) }
-                    } label: { ActionRow(title: person.name) }.buttonStyle(RowActionStyle())
+                    } label: {
+                        HStack(spacing: 12) { PersonAvatar(name: person.name, size: 42); ActionRow(title: person.name) }
+                    }.buttonStyle(RowActionStyle())
                 }
             }
-        }.navigationTitle(manual ? "Record a check" : "Check on someone")
+        }.navigationTitle("Choose a member")
     }
     private func personDetail(_ id: UUID) -> some View {
-        Page {
+        Page(spacing: 0, topPadding: 0) {
             if let person = store.person(id) {
-                PersonCard(person: person)
-                VStack(alignment: .leading, spacing: 12) {
-                    SectionTitle("A way to start")
-                    Text("“Hi \(person.firstName), I'm checking in from the Post. How have you been?”")
-                }.padding(20).background(Palette.paper, in: RoundedRectangle(cornerRadius: 16))
-                // Synthetic fixtures never pass a telephone URL to the system.
-                if person.isSynthetic {
-                    Button("Simulate call with \(person.firstName)") { request(.start(id, .simulatedCall)) }.buttonStyle(ActionStyle())
+                MemberProfile(name: person.name, subtitle: "Synthetic practice contact")
+                SectionBand {
+                    // Synthetic fixtures never pass a telephone URL to the system.
+                    if person.isSynthetic {
+                        Button("Simulate call with \(person.firstName)") { request(.start(id, .simulatedCall)) }.buttonStyle(ActionStyle())
+                    }
+                    Button("Record a check") { request(.start(id, .manual)) }.buttonStyle(ActionStyle(primary: false))
                 }
-                Button("Record a check") { request(.start(id, .manual)) }.buttonStyle(ActionStyle(primary: false))
-                Button(store.contactLink(for: person) == nil ? "Add to Contacts" : "Phone contact") { path.append(.contacts(id)) }.buttonStyle(ActionStyle(primary: false))
+                ConversationPrompt(firstName: person.firstName)
+                Button { path.append(.contacts(id)) } label: {
+                    ActionRow(title: store.contactLink(for: person) == nil ? "Add to Contacts" : "Phone contact")
+                }.buttonStyle(RowActionStyle())
             } else { unavailable("Person unavailable") }
         }.navigationTitle("Buddy Check")
+            .toolbarBackground(Palette.navy, for: .navigationBar).toolbarColorScheme(.dark, for: .navigationBar)
     }
 
     private var draftScreen: some View {
         Page {
             if let draft = store.draft, let person = store.person(draft.personID) {
-                PersonCard(person: person)
+                SectionBand(color: Palette.context) { PersonCard(person: person) }
                 switch draft.stage {
                 case .details: details(draft)
                 case .outcome: outcome(draft)
@@ -251,11 +260,11 @@ struct RootView: View {
     private func details(_ draft: CheckDraft) -> some View {
         VStack(alignment: .leading, spacing: 24) {
             SectionTitle("How did you check in?")
-            VStack(spacing: 12) {
+            VStack(spacing: 0) {
                 ForEach(ContactMethod.allCases) { method in
                     Button { perform { try store.setMethod(id: draft.id, method: method) } } label: {
                         Label(method.label, systemImage: draft.method == method ? "checkmark.circle.fill" : "circle")
-                    }.buttonStyle(ActionStyle(primary: draft.method == method))
+                    }.buttonStyle(ChoiceStyle(selected: draft.method == method))
                         .accessibilityAddTraits(draft.method == method ? .isSelected : [])
                 }
             }
@@ -271,11 +280,11 @@ struct RootView: View {
     private func outcome(_ draft: CheckDraft) -> some View {
         VStack(alignment: .leading, spacing: 24) {
             SectionTitle("What happened?")
-            VStack(spacing: 12) {
+            VStack(spacing: 0) {
                 ForEach(CheckOutcome.choices(for: draft.method)) { choice in
                     Button { perform { try store.updateDraft(id: draft.id) { $0.outcome = choice } } } label: {
                         Label(choice.label(for: draft.method), systemImage: draft.outcome == choice ? "checkmark.circle.fill" : "circle")
-                    }.buttonStyle(ActionStyle(primary: draft.outcome == choice))
+                    }.buttonStyle(ChoiceStyle(selected: draft.outcome == choice))
                         .accessibilityAddTraits(draft.outcome == choice ? .isSelected : [])
                 }
             }
@@ -322,20 +331,18 @@ struct RootView: View {
         }.navigationTitle("Recent checks")
     }
     private func checkDetail(_ id: UUID) -> some View {
-        Page {
+        Page(spacing: 20, topPadding: 0) {
             if let check = store.check(id), let person = store.person(check.personID) {
-                PersonCard(person: person)
-                WorkingSurface {
-                    Label("Check recorded", systemImage: "checkmark.circle.fill").font(.headline)
-                    Text(check.outcome.label(for: check.method)).font(.title2.bold())
-                    Text("\(check.method.label) · \(dateText(check.occurredAt))")
-                    Text("\(timeZoneText()) · \(check.storageLabel)").font(.footnote)
-                    Text("Recorded \(dateText(check.recordedAt))").font(.footnote)
+                ConfirmationHeading(title: "Check recorded", name: person.name)
+                VStack(spacing: 0) {
+                    ReceiptRow(title: "Outcome", value: check.outcome.label(for: check.method))
+                    ReceiptRow(title: "Contact", value: "\(check.method.label) · \(dateText(check.occurredAt))")
+                    Text("\(timeZoneText()) · \(check.storageLabel)").font(.footnote).padding(.vertical, 12)
                     if !check.revisions.isEmpty { Text("Corrected \(dateText(check.updatedAt))").font(.footnote) }
-                }
+                }.padding(.horizontal, 18).padding(.bottom, 12).background(.white)
                 if let followUp = store.followUp(forCheck: id) { followUpButton(followUp) }
-                Button("Correct this check") { request(.correction(id)) }.buttonStyle(ActionStyle(primary: false))
                 Button("Back to Home") { goHome() }.buttonStyle(ActionStyle())
+                Button("Correct this check") { request(.correction(id)) }.buttonStyle(ActionStyle(primary: false))
             } else { unavailable("Check unavailable") }
         }.navigationTitle("Your check")
     }
@@ -359,15 +366,19 @@ struct RootView: View {
     private func followUpDetail(_ id: UUID) -> some View {
         Page {
             if let item = store.followUp(id), let person = store.person(item.personID) {
-                PersonCard(person: person)
-                WorkingSurface {
-                    SectionTitle(item.status == .open ? "Follow up" : item.status.rawValue.capitalized)
-                    Text(dateText(item.due)).font(.title3)
-                    Text(timeZoneText()).font(.footnote)
+                SectionBand(color: Palette.context) {
+                    PersonCard(person: person)
+                    HStack(spacing: 14) {
+                        CalendarStamp(date: item.due)
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(dateText(item.due)).font(.headline)
+                            Text(item.status == .open ? "Follow up" : item.status.rawValue.capitalized).font(.subheadline)
+                        }
+                    }
                 }
                 if item.status == .open {
-                    DeviceReminderControls(item: item, reminders: reminders)
                     Button("Record a check") { request(.start(person.id, .manual)) }.buttonStyle(ActionStyle())
+                    SectionBand { DeviceReminderControls(item: item, reminders: reminders) }
                     Button("Mark complete") { perform { try store.closeFollowUp(id: id, status: .completed) } }.buttonStyle(ActionStyle(primary: false))
                     Button("Change time") { editingDate = item.due; path.append(.reschedule(id)) }.buttonStyle(ActionStyle(primary: false))
                     Button("Cancel follow-up", role: .destructive) { cancelFollowUpID = id }.font(.headline).foregroundStyle(Palette.red).frame(minHeight: 48)

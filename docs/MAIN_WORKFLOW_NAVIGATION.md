@@ -23,9 +23,9 @@ account is active, that temporary local context offers Back to Post. Connected
 reminders select the main connected Home and resolve their current record there.
 No source selector, preview notice or new preference is added.
 
-Reuse the existing navy identity, white information surfaces, gray canvas, blue
-actions, native text styles and shared person card. This is a navigation change,
-not a color or typography revision. Main actions remain visible; account settings
+The later approved [workflow design](BUDDY_CHECK_DESIGN.md#approved-workflow-implementation)
+updates the visual system and merges search and suggestions under Choose a member.
+The navigation and account boundaries described here remain in force. Main actions remain visible; account settings
 contain no member search, draft, history or follow-up navigation.
 
 Verify direct connected launch, settings/Done, Home and Follow-ups, restart into

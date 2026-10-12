@@ -7,8 +7,8 @@ import XCTest
         app.launchEnvironment["BUDDY_CHECKS_TEST_STORE"] = UUID().uuidString
         if connected { app.launchEnvironment["BUDDY_CHECKS_CONNECTED_FIXTURE"] = "1" }
         if persistent {
-            // Reuse protected, UUID-isolated fixture storage; no Contacts API is invoked.
-            app.launchEnvironment["BUDDY_CHECKS_CONNECTED_NATIVE_CREATION"] = "1"
+            // Use the UUID-isolated encrypted workflow journal for unsigned simulator builds.
+            app.launchEnvironment["BUDDY_CHECKS_CONNECTED_WORKFLOW_STORE"] = "1"
         }
         app.launch()
         return app
@@ -26,7 +26,7 @@ import XCTest
     func testConnectedHomeAndFollowUpsAreMainTabsAndSettingsContainsOnlyAccountDetails() {
         let app = launch(connected: true)
         XCTAssertTrue(app.staticTexts["Synthetic Post"].waitForExistence(timeout: 15))
-        XCTAssertTrue(app.buttons["Check on someone, Search the Post member list"].isHittable)
+        XCTAssertTrue(app.buttons["Choose a member"].isHittable)
         XCTAssertTrue(app.tabBars.buttons["Home"].exists && app.tabBars.buttons["Follow-ups"].exists)
         capture("Connected main Home", app: app)
         app.tabBars.buttons["Follow-ups"].tap()
@@ -36,11 +36,11 @@ import XCTest
         tap("Account and Post settings", app: app)
         XCTAssertTrue(app.staticTexts["Profile"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["Jamie Example"].exists)
-        XCTAssertFalse(app.buttons["Check on someone, Search the Post member list"].isHittable)
+        XCTAssertFalse(app.buttons["Choose a member"].isHittable)
         XCTAssertFalse(app.buttons["Continue with Alex"].isHittable)
         capture("Account settings without workflow actions", app: app)
         tap("Done", app: app)
-        XCTAssertTrue(app.buttons["Check on someone, Search the Post member list"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["Choose a member"].waitForExistence(timeout: 10))
         tap("Account and Post settings", app: app); tap("Sign out", app: app)
         tap("Sign out and remove unfinished work", app: app)
         XCTAssertTrue(app.staticTexts["Signed out."].waitForExistence(timeout: 10))
@@ -52,7 +52,7 @@ import XCTest
     func testProtectedDraftRestoresDirectlyOnHomeWithoutOpeningSettings() {
         let app = launch(connected: true, persistent: true)
         XCTAssertTrue(app.staticTexts["Synthetic Post"].waitForExistence(timeout: 15))
-        tap("Check on someone, Search the Post member list", app: app)
+        tap("Choose a member", app: app)
         let search = app.textFields["Search by name"]
         XCTAssertTrue(search.waitForExistence(timeout: 10)); search.tap(); search.typeText("Alex\n")
         tap("Alex Example", app: app); tap("Record a check", app: app)
@@ -64,8 +64,8 @@ import XCTest
         tap("Continue with Alex", app: app)
         XCTAssertTrue(app.staticTexts["Alex Example"].waitForExistence(timeout: 10))
         XCTAssertFalse(app.buttons["Save to Post"].isEnabled)
-        tap("Discard unfinished check", app: app); tap("Discard check", app: app)
-        XCTAssertTrue(app.buttons["Check on someone, Search the Post member list"].waitForExistence(timeout: 10))
+        tap("Check options", app: app); tap("Discard unfinished check", app: app); tap("Discard check", app: app)
+        XCTAssertTrue(app.buttons["Choose a member"].waitForExistence(timeout: 10))
         XCTAssertFalse(app.buttons["Continue with Alex"].exists)
         tap("Account and Post settings", app: app); tap("Sign out", app: app)
         tap("Sign out and remove unfinished work", app: app)
@@ -73,14 +73,14 @@ import XCTest
     }
     func testUnconfiguredLocalHomeKeepsWorkflowAndSettingsSeparate() {
         let app = launch(connected: false)
-        XCTAssertTrue(app.buttons["Check on someone"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.buttons["Choose a member"].waitForExistence(timeout: 15))
         tap("Account and Post settings", app: app)
         XCTAssertTrue(app.textFields["Post website"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.textFields["Public app ID"].exists)
-        XCTAssertFalse(app.buttons["Check on someone"].isHittable)
+        XCTAssertFalse(app.buttons["Choose a member"].isHittable)
         capture("Unconfigured account settings", app: app)
         tap("Done", app: app)
-        XCTAssertTrue(app.buttons["Check on someone"].isHittable)
+        XCTAssertTrue(app.buttons["Choose a member"].isHittable)
         XCTAssertTrue(app.tabBars.buttons["Follow-ups"].exists)
     }
 }

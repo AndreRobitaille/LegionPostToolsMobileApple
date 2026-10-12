@@ -434,7 +434,11 @@ actor FixtureTransport: HTTPTransport {
                                  "user": ["id": 7, "name": "Jamie Example"], "session_id": 23, "expires_at": instant(Date().addingTimeInterval(900)),
                                  "capabilities": ["buddy_checks": true, "contacts_export": permitsExport, "refresh": false]])
         }
-        if path.hasSuffix("/people") { return try response(["items": [identity], "next_cursor": NSNull()]) }
+        if path.hasSuffix("/people") {
+            let query = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "q" }?.value ?? ""
+            let matches = (contactFirstName + " " + contactLastName).localizedCaseInsensitiveContains(query)
+            return try response(["items": query.isEmpty || matches ? [identity] : [], "next_cursor": NSNull()])
+        }
         if path.hasSuffix("/people/42") {
             memberReads += 1
             var currentEligibility = eligibility

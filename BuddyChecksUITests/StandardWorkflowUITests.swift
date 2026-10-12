@@ -24,20 +24,21 @@ import XCTest
         shot.name = name; shot.lifetime = .keepAlways; add(shot)
     }
     private func begin(_ app: XCUIApplication) {
-        tap("Check on someone, Search the Post member list", app)
+        tap("Choose a member", app)
+        capture("Standard member chooser", app)
         let search = app.textFields["Search by name"]
         XCTAssertTrue(search.waitForExistence(timeout: 10)); search.tap(); search.typeText("Alex\n")
         tap("Alex Example", app)
         XCTAssertTrue(app.buttons["Record a check"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["Record a check"].isHittable)
-        XCTAssertFalse(app.staticTexts["“Hi Alex, I'm checking in from the Post. How have you been?”"].isHittable)
+        XCTAssertTrue(app.staticTexts["“Hi Alex, I'm checking in from the Post. How have you been?”"].isHittable)
         capture("Standard member actions", app)
         tap("Record a check", app)
         XCTAssertTrue(app.buttons["Save to Post"].waitForExistence(timeout: 10))
     }
     func testRecordAcceptedFactsHomeAndFollowUp() {
         let app = launch()
-        XCTAssertTrue(app.staticTexts["No open follow-ups."].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Your first Buddy Check"].waitForExistence(timeout: 10))
         capture("Standard Home empty", app)
         begin(app)
         XCTAssertFalse(app.buttons["Save to Post"].isEnabled)
@@ -67,7 +68,7 @@ import XCTest
         XCTAssertTrue(app.tabBars.buttons["Home"].isSelected)
         let recent = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Alex Example, No answer")).firstMatch
         XCTAssertTrue(recent.waitForExistence(timeout: 10))
-        XCTAssertFalse(app.staticTexts["No open follow-ups."].exists)
+        XCTAssertFalse(app.staticTexts["Your first Buddy Check"].exists)
         capture("Standard Home with activity", app)
         recent.tap()
         tap("Correct this check", app)
@@ -140,10 +141,10 @@ import XCTest
         capture("Standard pending save", app)
         for _ in 0..<3 { app.navigationBars.firstMatch.buttons.element(boundBy: 0).tap() }
         XCTAssertTrue(app.staticTexts["Submission pending"].waitForExistence(timeout: 10))
-        XCTAssertFalse(app.buttons["Check on someone, Search the Post member list"].exists)
+        XCTAssertFalse(app.buttons["Choose a member"].exists)
         capture("Standard Home recovery", app)
         tap("Check submission", app)
-        XCTAssertTrue(app.buttons["Check on someone, Search the Post member list"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["Choose a member"].waitForExistence(timeout: 10))
         let records = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Alex Example, No answer"))
         XCTAssertTrue(records.firstMatch.waitForExistence(timeout: 10)); XCTAssertEqual(records.count, 1)
         app.terminate()
@@ -169,4 +170,63 @@ import XCTest
         XCTAssertTrue(app.staticTexts["We connected"].exists)
         app.terminate()
     }
+    func testLocalPracticeCallReturnDraftCorrectionAndFollowUp() {
+        let app = XCUIApplication()
+        app.launchEnvironment["BUDDY_CHECKS_TEST_STORE"] = UUID().uuidString
+        app.launch()
+        tap("Choose a member", app)
+        tap("Robert Miller", app)
+        capture("Local member", app)
+        tap("Simulate call with Robert", app)
+        XCTAssertFalse(app.buttons["We talked"].isSelected)
+        XCTAssertFalse(app.buttons["No answer"].isSelected)
+        tap("No answer", app)
+        app.terminate(); app.launch()
+        tap("Continue with Robert", app)
+        XCTAssertTrue(app.buttons["No answer"].isSelected)
+        capture("Local restored outcome", app)
+        tap("Add follow-up", app)
+        let save = app.buttons["Save check and follow-up"]
+        for _ in 0..<3 where !save.isHittable { app.swipeUp() }
+        tap("Save check and follow-up", app)
+        XCTAssertTrue(app.staticTexts["Check recorded"].waitForExistence(timeout: 10))
+        capture("Local saved confirmation", app)
+        tap("Correct this check", app)
+        tap("We talked", app); tap("Save correction", app)
+        XCTAssertTrue(app.staticTexts["We talked"].waitForExistence(timeout: 10))
+        tap("Back to Home", app)
+        XCTAssertTrue(app.buttons["Open follow-up"].waitForExistence(timeout: 10))
+        capture("Local Home with follow-up", app)
+        tap("Open follow-up", app)
+        XCTAssertTrue(app.buttons["Record a check"].waitForExistence(timeout: 10))
+        capture("Local follow-up", app)
+        app.terminate()
+    }
+
+    func testChooserSuggestionBrowsingAndSearchRecoveryCreateNoDraft() {
+        let app = launch()
+        tap("Choose a member", app)
+        let candidate = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Alex Example,")).firstMatch
+        XCTAssertTrue(candidate.waitForExistence(timeout: 10)); candidate.tap()
+        XCTAssertTrue(app.buttons["Record a check"].waitForExistence(timeout: 10))
+        app.navigationBars.firstMatch.buttons.element(boundBy: 0).tap()
+        tap("Someone else", app)
+        XCTAssertTrue(app.staticTexts["More history is needed"].waitForExistence(timeout: 10))
+        tap("Include skipped members again", app)
+        XCTAssertTrue(candidate.waitForExistence(timeout: 10))
+        capture("Chooser restored suggestion", app)
+        let search = app.textFields["Search by name"]
+        search.tap(); search.typeText("Nobody\n")
+        XCTAssertTrue(app.staticTexts["No matching members. Try a first or last name."].waitForExistence(timeout: 10))
+        tap("Browse suggestions", app)
+        XCTAssertTrue(candidate.waitForExistence(timeout: 10))
+        tap("Hidden suggestions", app)
+        XCTAssertTrue(app.staticTexts["You have no hidden suggestions."].waitForExistence(timeout: 10))
+        app.navigationBars.firstMatch.buttons.element(boundBy: 0).tap()
+        app.navigationBars.firstMatch.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.buttons["Choose a member"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["Continue with Alex"].exists)
+        app.terminate()
+    }
+
 }

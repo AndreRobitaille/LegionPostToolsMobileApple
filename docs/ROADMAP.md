@@ -36,8 +36,8 @@ latest October 12 instruction.
 - [x] Implement human sign-in, typed API access, protected drafts, and receipt recovery.
 - [x] Implement server-filtered member search, suggestions, and Contacts export review.
 - [x] Implement connected corrections, follow-ups, and optional phone reminders.
-- [x] Implement the standard-size recording, receipt confirmation, Home activity,
-  and member-action redesign in the connected SwiftUI journey.
+- [x] Implement the approved standard-size Home, member chooser/profile, recording,
+  receipt and follow-up visual design across connected and local practice screens.
 - [x] Record controlled synthetic-service recovery and permission-change scenarios.
 - [x] Record first-user physical sign-in and member-lookup observations.
 - [x] Implement approved remembered sign-in and first-use suggestion/call fixes.

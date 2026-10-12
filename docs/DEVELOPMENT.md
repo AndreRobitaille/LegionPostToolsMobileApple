@@ -80,15 +80,17 @@ xcodebuild -project BuddyChecks.xcodeproj -scheme BuddyChecks \
   -derivedDataPath .build/Xcode CODE_SIGNING_ALLOWED=NO \
   -parallel-testing-enabled NO \
   -only-testing:BuddyChecksUITests/StandardWorkflowUITests \
-  -only-testing:BuddyChecksUITests/BuddyChecksUITests/testInterruptedManualCheckCorrectionAndSingleRecord \
-  -only-testing:BuddyChecksUITests/ConnectedUITests/testConnectedSuggestionRecordAndServerReceipt \
+  -only-testing:BuddyChecksUITests/MainNavigationUITests \
   test
 ```
 
-`StandardWorkflowUITests` contains only ordinary-size connected workflow checks:
+`StandardWorkflowUITests` contains only ordinary-size workflow checks:
 accepted facts and Home activity, method/note restoration after process restart,
-uncertain-save recovery, and stale-correction review. Its opt-in workflow-store
-fixture uses a UUID-isolated encrypted journal and a file-backed synthetic vault
+uncertain-save recovery, stale-correction review, member-chooser browsing/search
+recovery, and the local simulated-call/save/correction/follow-up journey.
+`MainNavigationUITests` checks tabs, account separation and Home draft restoration. Its opt-in workflow-store
+fixture, also used by the navigation restoration case, uses a UUID-isolated
+encrypted journal and a file-backed synthetic vault
 for unsigned simulator builds. It does not verify Keychain, call Contacts, or
 contact a Post server. Focused package coverage is
 `swift test --scratch-path .build/core --filter 'HomeActivityTests|JournalTests'`.
