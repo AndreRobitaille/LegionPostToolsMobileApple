@@ -1,65 +1,58 @@
 # Roadmap
 
-Status as of October 11, 2026. These milestones describe intended outcomes;
-unchecked items are not implemented. The original behavioral requirements remain
-in the [handoff](BUDDY_CHECK_MOBILE_APP_HANDOFF.md).
+Public status summary as of October 12, 2026. Private verification records retain
+the detailed chronology. Implementation, simulator observations, physical device
+acceptance, and backend deployment are separate evidence categories.
 
-## M0: repository ready for Codex
+## M0: repository ready
 
-- [x] Preserve the source handoff locally with provenance.
-- [x] Establish repository instructions, development notes, and decision record.
-- [x] Record SwiftUI as the initial implementation direction.
-- [x] Identify Linux tooling limits and recommend the MacBook development path.
+- [x] Preserve the original handoff and record the SwiftUI direction.
+- [x] Establish agent instructions, decisions, and reusable development commands.
+- [x] Prepare the macOS/Xcode development environment.
+- [x] Prepare a public source checkpoint with private operational artifacts excluded.
 
-This milestone establishes project context, not a buildable app.
+## M1: complete synthetic Buddy Check on iPhone
 
-## M1: one complete synthetic Buddy Check on iPhone
+- [x] Create the SwiftUI app and local packages.
+- [x] Persist unfinished work, manual outcomes, corrections, and follow-ups.
+- [x] Provide explicit Contacts creation/linking and reviewed updates.
+- [x] Provide explainable synthetic suggestions and optional device reminders.
+- [x] Record simulator ordinary/maximum-text and focused VoiceOver workflow checks.
+- [x] Record installation and selected physical workflow acceptance on iPhone 17 Pro.
 
-Next work: establish the Mac/Xcode/device path and design the small SwiftUI journey.
-
-- [ ] Record a working development signing/install route and supported toolchain.
-- [ ] Create a reproducible SwiftUI project with exact build/test commands.
-- [ ] Design home, contact, outcome, and follow-up screens using the handoff's visual
-  direction; review ordinary and accessibility text sizes.
-- [ ] Choose a clearly synthetic contact and simulate a call without dialing.
-- [ ] Record talked/no answer/wrong number/did not call outcomes and corrections.
-- [ ] Save a follow-up; change, complete, or cancel it.
-- [ ] Restore drafts and completed work after app termination without duplication.
-- [ ] Schedule a real local device reminder, return to its follow-up, and handle
-  denied permissions, stale reminders, and time-zone behavior truthfully.
-- [ ] Verify the journey on Andre's iPhone 17 Pro, including interruption, relaunch,
-  large text, and VoiceOver. Record checks and limitations.
-
-Completion means the synthetic workflow persists and is understandable on the
-phone. A simulated call remains visibly simulated; previews or screenshots alone
-do not complete this milestone. Assistance routing is unavailable until a real
-receiving workflow exists.
+Prior user observations cover draft recovery, Phone cancellation/return, local
+reminder delivery/dismissal, Contacts creation/labels/account sync, and suggestions.
+Physical snooze delivery, broader device/account behavior, older supported iOS
+versions, and the unresolved raw accessibility-audit findings remain separate limits.
 
 ## M2: limited connected Buddy Check
 
-- [ ] Reinspect current LegionPostTools code and membership work before designing
-  shared records or endpoints; coordinate changes in the backend repository.
-- [ ] Specify human mobile authentication, server-filtered access, minimum fields,
-  and authorized device storage/retention.
-- [ ] Define contact/follow-up persistence, retry deduplication, and conflict rules.
-- [ ] Implement truthful local/pending/server-accepted states and recovery from
-  failed saves, expired sessions, changed permissions, and stale notification links.
-- [ ] Under authorization for real data, complete and later retrieve Andre's Buddy
-  Check and follow-up through the backend; verify server persistence.
+- [x] Implement human sign-in, typed API access, protected drafts, and receipt recovery.
+- [x] Implement server-filtered member search, suggestions, and Contacts export review.
+- [x] Implement connected corrections, follow-ups, and optional phone reminders.
+- [x] Record controlled synthetic-service recovery and permission-change scenarios.
+- [x] Record first-user physical sign-in and member-lookup observations.
+- [x] Implement approved remembered sign-in and first-use suggestion/call fixes.
+- [ ] Observe fresh physical remembered consent and subsequent renewal behavior.
+- [ ] Accept connected physical notification delivery and remaining authority changes.
+- [ ] Under separate real-data authority, complete and retrieve a real Buddy Check
+  and follow-up with independently verified backend persistence.
 
-No volunteer worklist may depend on downloading an unrestricted roster. A local
-prototype is not evidence of a working mobile API or authentication contract.
+A source checkpoint and successful local tests do not establish current backend
+production behavior. Real outreach and official-record changes need their own authority.
 
-## M3: use, refine, then add renewal/reconnection
+## M3: membership renewal and reconnection
 
-- [ ] Observe Andre using the app through real follow-up intervals and interruptions.
-- [ ] Refine friction from those observations.
-- [ ] Add permitted membership assignments for an explicit year, coordinating with
-  existing backend membership work.
-- [ ] Preserve caller observations separately from source-confirmed membership facts.
-- [ ] Observe older, less technically confident members using the workflow without
-  coaching before claiming it serves that audience well.
+- [ ] Reinspect the current backend membership design and permission model.
+- [ ] Define caller observations, source-confirmed coverage, and verification routing.
+- [ ] Implement and accept a complete authorized renewal/reconnection journey.
 
-Team administration, assistance routing, Android, standalone use, public
-distribution, payments, AI analysis, VoIP, call recording, and automated reporting
-remain deferred. Add them when actual needs justify a scoped milestone.
+An “already paid” observation must not change authoritative coverage or create
+financial evidence. Keep renewal details and sensitive support history outside
+ordinary Buddy Check participation.
+
+## Later decisions
+
+Assistance routing, wider volunteer participation, distribution, Android,
+standalone use, and multi-tenancy remain future concerns. Establish their product,
+access, ownership, and usability requirements when they become active milestones.

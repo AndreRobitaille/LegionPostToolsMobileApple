@@ -78,3 +78,40 @@ build/
 *.provisionprofile
 *.keychain
 *.keychain-db
+
+# Private working evidence and installation-specific integration tools.
+/.private/
+/review/
+/design/review/
+/design/icon-concepts/
+/design/app-icon-handoff/
+/BuddyChecks/Live*.swift
+/BuddyChecksUITests/LiveIntegrationUITests.swift
+/BuddyChecks.xcodeproj/xcshareddata/xcschemes/BuddyChecksLive.xcscheme
+/scripts/*
+!/scripts/check-development-environment.sh
+
+# Publish product/build documentation, not private handoffs or test reports.
+/docs/*
+!/docs/BUDDY_CHECK_MOBILE_APP_HANDOFF.md
+!/docs/BUDDY_CHECK_DESIGN.md
+!/docs/DECISIONS.md
+!/docs/DEVELOPMENT.md
+!/docs/DEVICE_REMINDERS_DESIGN.md
+!/docs/IMPLEMENTATION.md
+!/docs/MAIN_WORKFLOW_NAVIGATION.md
+!/docs/ROADMAP.md
+!/docs/SUGGESTIONS_DESIGN.md
+
+# Diagnostic output, exported data, and local trust material.
+*.log
+*.trace
+*.sarif
+*.sqlite
+*.sqlite3
+*.db
+*.pem
+*.key
+*.crt
+*.cer
+*.der

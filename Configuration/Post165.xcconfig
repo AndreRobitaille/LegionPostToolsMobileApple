@@ -1,0 +1,5 @@
+// Public connection settings from the October 12 production handoff.
+// Opt in with xcodebuild -xcconfig Configuration/Post165.xcconfig.
+// The empty expansion keeps // from starting an xcconfig comment.
+BUDDY_CHECKS_POST_ISSUER = https:/$()/members.wipost165.org
+BUDDY_CHECKS_POST_CLIENT_ID = org.wipost165.buddychecks

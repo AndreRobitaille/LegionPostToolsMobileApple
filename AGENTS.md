@@ -31,6 +31,13 @@ observations establish current backend or production behavior.
   applicable instructions. No mandatory delegation or approval ceremony.
 - Update relevant decisions, setup commands, and milestone status when they change.
   Report what changed, what was checked, and what remains unverified.
+- This is a public repository. Andre's October 12 publishing instruction excludes
+  secrets, personal/member data, private security or operational evidence, raw
+  captures, infrastructure details, and signing/trust material. Honor the explicit
+  documentation/tool allowlist in `.gitignore`; do not force-add ignored files.
+  Full pre-publication working documents are preserved locally under the ignored
+  `.private/publication-2026-10-12/` directory. Private integration hooks need the local
+  `BUDDY_CHECKS_PRIVATE_INTEGRATION` compilation flag and their ignored source.
 
 ## Product and architecture
 
@@ -62,8 +69,10 @@ observations establish current backend or production behavior.
   presenting them as available. No automatic emergency escalation.
 - Any-member participation does not grant access to another caller's private notes,
   renewal details, or sensitive support history. Make the sharing audience clear.
-- Store credentials securely. Keep personal information out of logs, notification
-  previews, analytics, screenshots, and general Post updates. Decide retention and
+- Store credentials securely. Keep personal information out of logs, analytics,
+  screenshots, and general Post updates. Andre's October 12 instruction permits
+  a first name and action in reminder notifications, such as “Call Robert for a
+  Buddy Check.” Exclude surnames, contact details, notes and outcomes. Decide retention and
   sign-out/revocation behavior before storing real data offline; existing backend
   `no-store` responses do not authorize a roster cache.
 - Recheck server authority on reconnect. A caller's "already paid" observation
@@ -77,9 +86,11 @@ screens. Preserve the handoff's restrained "The 1919" direction using native
 text styles, Dynamic Type, labelled large controls, and clear recovery. Inspect
 ordinary and accessibility text sizes, VoiceOver, and smaller layouts.
 
-There is currently no app or runnable test suite. Do not invent build commands or
-claim source review proves iOS behavior. Add exact project/scheme, setup, build,
-and test commands to the development guide when the app is created.
+The `BuddyChecks.xcodeproj` app and `BuddyCheckCore` package implement the durable
+synthetic workflow. Exact build and test commands are in `docs/DEVELOPMENT.md`.
+The separate `design/` harness remains session-only. Do not claim source review
+or core tests prove iOS behavior; record simulator and physical-device evidence
+separately.
 
 For documentation changes, check links, consistency, and `git diff --check`,
 including new files in the review. For behavior changes, use focused meaningful

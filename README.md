@@ -1,48 +1,69 @@
 # LegionPostToolsMobileApple
 
-An iPhone app for American Legion Buddy Checks, followed by membership renewal
-and reconnection. The first user is Andre on his iPhone 17 Pro. The initial Post
-context is Robert E. Burns Post 165 in Two Rivers, Wisconsin.
-
-The implementation direction is **SwiftUI**, with LegionPostTools providing the
-shared records and server-enforced permissions for the eventual connected app.
-Start with a complete synthetic journey: choose someone, simulate contact, record
-an outcome, set a follow-up, and return later without losing work.
+A SwiftUI iPhone app for American Legion Buddy Checks, with membership renewal
+and reconnection planned as a later workflow. The initial Post context is
+Robert E. Burns Post 165 in Two Rivers, Wisconsin; Post identity and installation
+URL are configurable.
 
 ## Current status
 
-Repository initialized for Codex work on October 11, 2026. It contains project
-guidance and planning documents; no app target, dependency manifest, build scripts,
-CI, or automated tests exist yet. A working iPhone build is the next milestone.
+The repository contains the `BuddyChecks` app, three local Swift package
+libraries, synthetic fixtures, package tests, native UI tests, and a separate
+design harness. There are no third-party runtime dependencies.
 
-Use a **MacBook with Xcode for primary iOS development**. The Linux checkout can
-support documentation, source editing, and backend coordination. See the
-[development guide](docs/DEVELOPMENT.md) for the environment facts and setup work
-still needed.
+Implemented workflows include:
+
+- Durable synthetic drafts, simulated contact, manual check recording, corrections,
+  and in-app follow-ups.
+- Human sign-in, server-filtered member search and suggestions, protected connected
+  drafts, accepted-record recovery, corrections, and connected follow-ups.
+- Explicit Contacts creation/linking and reviewed updates, with recovery from
+  unavailable contacts, changed permissions, interrupted creation, and failed saves.
+- Optional phone reminders, first-name/action notification text, phone-only snooze,
+  dismissal, and current-record checks when opening a reminder.
+- Home and Follow-ups as the main tabs, with Account and Post settings behind the
+  person icon. Suggestions browse people without creating work.
+
+Dated local verification records document simulator workflows and installation
+on the first user's iPhone 17 Pro. Physical acceptance covers the synthetic core
+journey, selected Contacts workflows, and suggestions. Connected physical reminder
+behavior, elapsed remembered-session behavior, broader devices/OS versions, and
+wider volunteer usability still need their own evidence. Source and package tests
+alone do not establish those outcomes.
+
+This public checkpoint includes implementation and reusable documentation.
+Private integration handoffs, infrastructure details, recordings, screenshots,
+raw diagnostics, and signing material remain local and are ignored by Git.
+Public documentation summarizes progress; it does not publish operational evidence
+or establish current backend behavior. There is no CI or distributed build yet.
 
 ## Start here
 
-- [AGENTS.md](AGENTS.md): Codex working agreement and product boundaries.
-- [Original handoff](docs/BUDDY_CHECK_MOBILE_APP_HANDOFF.md): preserved product
-  context, workflows, privacy requirements, and verification scenarios.
-- [Decisions](docs/DECISIONS.md): current direction and unresolved choices;
-  supersedes the handoff's open framework choice.
-- [Roadmap](docs/ROADMAP.md): small milestones with observable completion criteria.
-- [Development](docs/DEVELOPMENT.md): Mac/Linux workflow, validation, and source
-  provenance.
+- [Agent instructions](AGENTS.md): working agreement and product boundaries.
+- [Original handoff](docs/BUDDY_CHECK_MOBILE_APP_HANDOFF.md): dated initial product
+  context; later decisions supersede its open implementation choices.
+- [Decisions](docs/DECISIONS.md): current product and implementation direction.
+- [Roadmap](docs/ROADMAP.md): milestone status and remaining acceptance.
+- [Development](docs/DEVELOPMENT.md): reproducible package, build, and UI-test commands.
+- [Implementation](docs/IMPLEMENTATION.md): durable synthetic workflow design.
+- [Buddy Check design](docs/BUDDY_CHECK_DESIGN.md): native interaction design.
+- [Design harness](design/README.md): a separate session-only SwiftUI study.
 
-Codex uses the root `AGENTS.md` for repository instructions, following the
-[official guidance](https://learn.chatgpt.com/docs/agent-configuration/agents-md).
-Read task-relevant documents before implementation; the roadmap is a plan, not a
-claim of shipped features.
+## Build
 
-## Scope
+Use macOS with full Xcode selected. The initial development environment uses
+Xcode 27 and the iOS 27 simulator. The app's provisional minimum is iOS 18;
+that setting does not establish compatibility testing on iOS 18.
 
-Buddy Checks and renewal work have different purposes and audiences. Any-member
-Buddy Check participation does not imply access to private support history or
-full membership records. Recipients do not need the app or an account.
+```sh
+bash scripts/check-development-environment.sh
+swift test --scratch-path .build/core
+xcodebuild -project BuddyChecks.xcodeproj -scheme BuddyChecks \
+  -configuration Debug -sdk iphonesimulator \
+  -destination 'generic/platform=iOS Simulator' \
+  -derivedDataPath .build/Xcode CODE_SIGNING_ALLOWED=NO build-for-testing
+```
 
-Use synthetic contacts for development. Android, standalone accounts, multi-tenant
-hosting, payments, AI features, and public distribution are later decisions.
-
-The repository retains its existing [GPL-3.0 license](LICENSE).
+See the development guide for simulator execution and local signing. Only public
+connection defaults belong in configuration files; never embed account credentials,
+shared privileged tokens, personal signing settings, or real contact fixtures.

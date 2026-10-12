@@ -1,87 +1,134 @@
 # Development
 
-## Environment and repository status
+## Environment
 
-Observed during initialization on October 11, 2026:
+Build and run on macOS with full Xcode, an installed iOS Simulator runtime, and
+the Swift toolchain that ships with Xcode. The initial development setup uses
+Xcode 27, Swift 6.4, and the iOS 27 simulator. The app's provisional minimum is
+iOS 18; older supported OS versions require separate verification.
 
-- Checkout: `/home/andre/Development/LegionPostToolsMobileApple` on Linux.
-- Remote: `https://github.com/AndreRobitaille/LegionPostToolsMobileApple.git`.
-- Initial revision: `6c9ff96`, on `master`; the worktree was clean before setup.
-- `swift`, `xcodebuild`, and `xcrun` were not available on the current PATH.
-- No Xcode project, Swift package, app source, dependencies, CI, or tests exist yet.
-- MacBook access/configuration, installed iOS version, signing, and device install
-  route have not been verified in this session.
+```sh
+export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+bash scripts/check-development-environment.sh
+```
 
-Recheck these observations before relying on them; they are not machine requirements
-or permanent project state.
+The check script reads the toolchain/runtime configuration. It does not build the
+app, verify signing, install on a phone, or establish physical-device behavior.
+Xcode, Swift macros, and CoreSimulator may require host access when an agent's
+filesystem sandbox blocks them. Do not change global signing or trust settings
+to work around a sandbox error.
 
-## Work primarily on the MacBook
+## Package tests
 
-Use the MacBook for the SwiftUI edit/build/run cycle and iPhone verification.
-[Xcode](https://developer.apple.com/xcode/) provides previews, simulators, and
-Apple-platform development tools. Keep backend development on Linux as useful;
-documentation and source editing can happen on either machine.
+`Package.swift` defines `BuddyCheckCore`, `BuddyCheckContacts`, and `BuddyCheckAPI`
+with local package dependencies only.
 
-Once these initialization files are committed and pushed under Andre's
-authorization, clone or update this repository on the MacBook and open that
-checkout in Codex. Until then, the new files exist only in this Linux worktree;
-a fresh clone will not contain uncommitted changes. Keep each machine's unrelated
-work intact and exchange scoped changes through Git.
+```sh
+swift test --scratch-path .build/core
+```
 
-Before creating the app target:
+These tests use synthetic data and in-memory Contacts objects/fake stores.
+They do not access the developer's address book, contact a production installation,
+or establish iOS UI, notification delivery, backend persistence, or phone usability.
 
-1. Inspect the Mac's macOS and Xcode versions and the iPhone's installed iOS version.
-   Check Apple's current compatibility information; do not guess a minimum iOS
-   version or require the newest SDK without a reason.
-2. Confirm the active developer tools and installed simulators. Read-only starting
-   commands on the Mac are `sw_vers`, `xcodebuild -version`, `xcode-select -p`, and
-   `xcrun simctl list devices available`.
-3. Establish a development signing and install route for Andre's phone. Record
-   bundle identifier, deployment target, toolchain, and nonsecret setup steps.
-   Keep certificates, private keys, provisioning profiles, and account credentials
-   out of Git. Public distribution remains a separate milestone.
-4. Create the SwiftUI app and meaningful test targets, then replace the status above
-   with verified project/scheme names and exact build/test commands. Prefer the
-   smallest setup that another checkout can reproduce.
+## Simulator build
 
-Useful design and synthetic implementation work can continue before device access
-is settled. Record build/device checks as unavailable until actually run.
+Open `BuddyChecks.xcodeproj` and select the shared **BuddyChecks** scheme.
+The bundle identifier is `org.wipost165.buddychecks`.
 
-## Verification
+```sh
+xcodebuild -project BuddyChecks.xcodeproj -scheme BuddyChecks \
+  -configuration Debug -sdk iphonesimulator \
+  -destination 'generic/platform=iOS Simulator' \
+  -derivedDataPath .build/Xcode CODE_SIGNING_ALLOWED=NO build-for-testing
+```
 
-At the documentation-only stage, run `git diff --check`, review new files as well
-as tracked changes, and check local Markdown links. No application test command
-exists yet. Do not add a green placeholder CI job that implies an iOS build passed.
+This compiles the app and UI-test runner without installing or running them.
+An App Intents metadata-extraction warning is expected because the app has no
+App Intents dependency.
 
-When app code exists, derive focused tests from the workflow contracts in the
-[handoff](BUDDY_CHECK_MOBILE_APP_HANDOFF.md#verification-that-matters). Prioritize
-restoration after termination, truthful outcomes/save states, retry behavior, and
-reminder lifecycle. Validate rendered screens and real device behavior in addition
-to tests. Record the revision, device/OS, scenario, expected and observed result,
-and limitations; keep all artifacts synthetic.
+Choose an available simulator on your own Mac:
 
-## Backend coordination and provenance
+```sh
+xcrun simctl list devices available
+```
 
-The local [handoff](BUDDY_CHECK_MOBILE_APP_HANDOFF.md) is an unchanged copy of
-`/home/andre/Development/LegionPostTools/docs/BUDDY_CHECK_MOBILE_APP_HANDOFF.md`,
-imported October 11, 2026. Its SHA-256 is
-`c2438055ed6484fe85a18b0f62e0d2a97b93c66afea362014bfb3ecfb769d164`.
-The source file was untracked at import; the backend HEAD was
-`6d4e96da4fe1b086bf333e899caa6ce7e46f8eea`. That commit alone does not contain
-the handoff or reproduce its surrounding working tree.
+Replace `SIMULATOR_UUID` below with that device's identifier:
 
-The backend worktree also contained active membership model/service/migration work,
-an untracked membership design, and roadmap edits. Only Git status and project
-instructions were inspected for initialization; those changes were not reviewed
-as an API contract or tested. The handoff's backend inventory is historical.
+```sh
+xcrun simctl boot SIMULATOR_UUID
+xcrun simctl bootstatus SIMULATOR_UUID -b
+xcrun simctl install SIMULATOR_UUID \
+  .build/Xcode/Build/Products/Debug-iphonesimulator/BuddyChecks.app
+xcrun simctl launch SIMULATOR_UUID org.wipost165.buddychecks
+```
 
-Before connected work, locate the current LegionPostTools checkout, read its
-`AGENTS.md`, `docs/MEMBERSHIP_MANAGEMENT_DESIGN.md`, roles and sign-in guidance,
-and inspect current routes and controllers. Treat paths in the copied handoff's
-reference map as backend paths, not missing files in this mobile repository.
-No production access is needed for a synthetic prototype. Authorized live API
-work must use the installation's current permission-filtered `GET /api` handbook.
+Synthetic work persists in the app's sandbox. Terminate/relaunch to inspect draft
+restoration. Use a disposable simulator when a test intentionally clears app state
+or changes simulator Contacts. Never substitute a real member or arbitrary real
+phone number for a synthetic fixture.
 
-Preserve the imported handoff as historical context. Record subsequent decisions
-in [DECISIONS.md](DECISIONS.md) and progress in [ROADMAP.md](ROADMAP.md), with
-explicit provenance if a later source handoff is imported.
+## Native UI tests
+
+Use a disposable simulator and supply its identifier explicitly:
+
+```sh
+xcodebuild -project BuddyChecks.xcodeproj -scheme BuddyChecks \
+  -configuration Debug -sdk iphonesimulator \
+  -destination 'platform=iOS Simulator,id=SIMULATOR_UUID' \
+  -derivedDataPath .build/Xcode CODE_SIGNING_ALLOWED=NO \
+  -parallel-testing-enabled NO test
+```
+
+The public UI tests exercise synthetic app responses and selected native adapters.
+They do not establish live Post permissions or production acceptance. Inspect
+ordinary and maximum accessibility text, VoiceOver, smaller layouts, interruptions,
+calling/returning, and notification permission changes when the behavior is affected.
+Unfiltered accessibility diagnostics can report unresolved findings; a successful
+focused workflow test does not clear those findings.
+
+## Local connection and signing
+
+Ordinary builds start with blank connection defaults. The opt-in
+`Configuration/Post165.xcconfig` contains only the public installation URL and
+public OAuth client identifier. Existing saved settings take precedence.
+
+```sh
+xcodebuild -project BuddyChecks.xcodeproj -scheme BuddyChecks \
+  -configuration Release -sdk iphoneos \
+  -destination 'generic/platform=iOS' \
+  -xcconfig Configuration/Post165.xcconfig \
+  -derivedDataPath .build/Phone \
+  DEVELOPMENT_TEAM=YOUR_TEAM_ID build
+```
+
+Select your team locally and obtain separate authorization for provisioning,
+installation, and real-data use. Do not commit personal team settings, signing
+profiles, certificates, account credentials, or private connection values.
+Building does not install, distribute, or deploy the app or backend.
+
+Private integration diagnostics remain local. They are excluded from the public
+source and require `BUDDY_CHECKS_PRIVATE_INTEGRATION` in the local Debug compilation
+conditions for both the app and test runner. Ordinary public Debug and Release
+builds use the normal transport. Existing private fixture guards, test-service
+configuration, and separate authorization still apply; the compilation flag does
+not authorize integration activity.
+
+## Design harness and app icon
+
+The [design harness](../design/README.md) is a separate, session-only preview.
+It does not implement persistence, real calls, connected records, or reminders.
+The production icon source is `BuddyChecks/BuddyChecksIcon.icon`; use the existing
+Icon Composer package rather than regenerating flattened icon artwork.
+
+## Verification and publication
+
+Review staged changes, new files, documentation links, and `git diff --check`.
+Run package tests and proportionate native checks. Keep package tests, simulator
+runs, prior physical observations, and live backend evidence distinct.
+
+Stage explicit source/documentation paths and inspect the resulting tree before
+committing. Review evidence, installation-specific integration tools, raw captures,
+exported data, credentials, signing material, and trust stores are ignored and
+remain local. Scan the exact publishable tree and history for credentials before
+pushing to the public repository. Ignored files are not backed up by a Git push.
