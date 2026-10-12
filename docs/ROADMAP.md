@@ -22,14 +22,22 @@ acceptance, and backend deployment are separate evidence categories.
 
 Prior user observations cover draft recovery, Phone cancellation/return, local
 reminder delivery/dismissal, Contacts creation/labels/account sync, and suggestions.
-Physical snooze delivery, broader device/account behavior, older supported iOS
-versions, and the unresolved raw accessibility-audit findings remain separate limits.
+Physical snooze delivery, broader device/account behavior and older supported iOS
+versions remain separate limits. Historical specialist diagnostics are retained
+locally; they do not gate the current standard-size design work.
 
 ## M2: limited connected Buddy Check
+
+Current design priority: substantial improvements to the standard-size iPhone
+17 Pro workflow, especially Home, recording and confirmation. Large-font checks,
+smaller-phone matrices and broader accessibility work come later, per Andre's
+latest October 12 instruction.
 
 - [x] Implement human sign-in, typed API access, protected drafts, and receipt recovery.
 - [x] Implement server-filtered member search, suggestions, and Contacts export review.
 - [x] Implement connected corrections, follow-ups, and optional phone reminders.
+- [x] Implement the standard-size recording, receipt confirmation, Home activity,
+  and member-action redesign in the connected SwiftUI journey.
 - [x] Record controlled synthetic-service recovery and permission-change scenarios.
 - [x] Record first-user physical sign-in and member-lookup observations.
 - [x] Implement approved remembered sign-in and first-use suggestion/call fixes.

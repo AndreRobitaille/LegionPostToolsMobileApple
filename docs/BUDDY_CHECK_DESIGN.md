@@ -4,6 +4,50 @@ Design proposal, October 11, 2026. This defines the first synthetic journey for
 review. It does not establish backend behavior or complete M1. Read it alongside
 the [handoff](BUDDY_CHECK_MOBILE_APP_HANDOFF.md) and [decisions](DECISIONS.md).
 
+## Current review scope
+
+Andre's October 12 instruction supersedes the earlier review requirements below.
+Prioritize substantial workflow and visual improvements at standard text size
+on iPhone 17 Pro. Large-font checks, smaller-phone matrices and broader
+accessibility work come later and must not delay the main design work.
+Do not enable VoiceOver or run assistive-technology checks or
+accessibility audits unless Andre explicitly requests them. Historical diagnostic
+notes remain a record of earlier work, not instructions to repeat it.
+
+## Standard-size workflow implementation
+
+October 12: implement the approved four-screen study in the connected SwiftUI
+journey, beginning with recording and confirmation, then Home and member details.
+Keep the shared person header and native Home/Follow-ups tabs. Group outcome
+choices in one white surface, summarize editable method/time, disclose optional
+notes and follow-up time editing, and pin Save in the native bottom safe area.
+No outcome is selected automatically. Draft, correction and uncertain-submission
+recovery retain their existing identities and persistence rules.
+
+Confirmation displays accepted receipt facts and offers Home, the saved follow-up
+and correction. Home prioritizes pending submissions and named drafts, then shows
+the next open caller-owned follow-up and recent caller-owned checks. Read all
+pages before ranking these summaries; resolve names only for displayed records
+and retain no directory/history cache. Loading and failed reads must not claim an
+empty list. Hide suggestions management belongs in the suggestion flow.
+
+Member detail places contact and recording actions ahead of the expandable
+conversation prompt. Follow-up detail places the member action before phone-alert
+settings. Keep eligibility explanations and phone-alert status truthful. Verify
+the changed normal-size iPhone 17 Pro journey, accepted corrections, retained
+drafts and uncertain saves with synthetic data. No VoiceOver, accessibility or
+large-font work is part of this implementation.
+
+The connected implementation now follows this plan. Standard-size simulator
+checks cover accepted facts, returning Home from either main tab, correction,
+method/note restoration after process restart, pending-save recovery and stale
+correction review. Package checks cover complete pagination, latest revisions,
+protected drafts and receipt recovery. These use synthetic Post responses; they
+are not physical-phone or live-backend acceptance. While entering a note, Done
+shares the bottom action bar with Save so a floating keyboard control cannot
+cover it. Connected entry and receipt summaries retain the recorded entry zone,
+with a zone label when it differs from the device's current zone.
+
 ## Scroll-edge contrast follow-up
 
 Andre needs to review a member's details and reach the labelled Contacts actions
@@ -16,27 +60,23 @@ white working surfaces, grey canvas and blue actions keep their existing tokens;
 native type and the shared person-card dimensions stay unchanged.
 
 Flow stays person → Contacts details → create/select, with native Back and tabs.
-The experiment succeeds only if rendered small-phone ordinary/maximum text and
-VoiceOver retain clear, reachable actions. Run the unfiltered audit at the initial
-position and with lower actions fully visible; preserve failures rather than
-changing its contrast rules. Inspect the navigation-title finding independently.
+The experiment succeeds when rendered standard-size primary-phone screens retain
+clear, reachable actions at the initial position and with lower actions fully
+visible. Inspect the visible navigation title and content near the tabs.
 The API is documented in [Apple's scroll-edge guidance](https://developer.apple.com/documentation/swiftui/view/scrolledgeeffectstyle(_:for:)).
 
-## Follow-up audit diagnosis
+## Historical audit diagnosis
 
-Before another visual change, compare the unchanged Contacts screen at initial,
-actions-visible and footer-fully-visible scroll positions. Capture every SDK
-finding's element label/frame alongside the screenshot and complete descriptions;
-return false from the observer so no finding is suppressed. The third position
-must geometrically place the entire footnote above the tabs. This separates
-occluded scroll content from reports on fully visible title/address text. Preserve
-the navy/white/blue palette and shared person card until rendered evidence
-supports a change. This diagnostic does not change the caller's flow, permissions
-or Contacts records, and a failed audit remains a failed audit.
+The earlier diagnostic compared the unchanged Contacts screen at initial,
+actions-visible and footer-fully-visible scroll positions, retaining SDK findings
+alongside screenshots and descriptions. It separated occluded scroll content from
+reports on fully visible title/address text. The diagnostic preserved the
+navy/white/blue palette, shared person card, caller flow, permissions and Contacts
+records. It is outside the current routine review scope.
 
 The full audit changed the visible content position after the pre-audit screenshot.
-A separate contrast-only diagnostic therefore uses the same full-footer geometry
-checks without replacing any all-types case. Its observer also records every
+A separate contrast-only diagnostic therefore used the same full-footer geometry
+checks without replacing any all-types case. Its observer also recorded every
 finding. Results (local record) distinguish
 palette measurements, actual viewport changes and the still-failing SDK checks.
 
@@ -99,7 +139,7 @@ groups and fixed-height cards. No essential action depends on a swipe or icon.
 Use native date/time pickers and Back behavior. Respect reduced motion by adding
 no custom animations.
 
-At accessibility sizes, remove redundant introductory copy and put date/time
+At large text sizes, remove redundant introductory copy and put date/time
 labels above their controls.
 Let content scroll instead of shrinking text or clipping controls.
 
@@ -283,9 +323,9 @@ data. The current UI and simulator harness are unchanged by these notes.
 
 Review the ordinary path, Home with an unfinished check, a correction, a changed
 or cancelled follow-up, empty search/list states, and notification denial. Check
-normal and accessibility text sizes, a smaller layout, and VoiceOver order.
-Rendered screenshots show layout only; they do not prove phone usability or
-accessibility with assistive technology.
+standard-size screens on the primary phone. Defer dedicated large-font and
+smaller-phone passes. Rendered screenshots show
+layout only; they do not prove phone usability or workflow behavior.
 
 The preview source and repeatable build instructions live in
 [design/README.md](../design/README.md). Record rendered observations and any

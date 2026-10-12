@@ -709,7 +709,7 @@ import XCTest
     func testCurrentFollowUpVoiceOver() throws {
         guard #available(iOS 27.0, *) else { throw XCTSkip("Requires the native VoiceOver test service.") }
         let app = launch(largeText: true, changedFollowUp: true)
-        tap("Your follow-ups", app: app)
+        app.tabBars.buttons["Follow-ups"].tap()
         let row = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Alex Example,")).firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 5)); row.tap()
         XCTAssertTrue(app.staticTexts["Completed"].waitForExistence(timeout: 5))
@@ -731,7 +731,7 @@ import XCTest
 
     private func freshFollowUp(largeText: Bool) throws {
         let app = launch(largeText: largeText, changedFollowUp: true)
-        tap("Your follow-ups", app: app)
+        app.tabBars.buttons["Follow-ups"].tap()
         let row = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@ AND label ENDSWITH %@", "Alex Example,", "Open")).firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 5)); row.tap()
         XCTAssertTrue(app.staticTexts["Completed"].waitForExistence(timeout: 5))
@@ -812,7 +812,7 @@ import XCTest
         XCTAssertTrue(row.waitForExistence(timeout: 5)); row.tap()
         tap("Correct this check", app: app)
         tap("We connected", app: app)
-        let notes = app.textFields["Your check notes"]
+        let notes = app.textFields.firstMatch
         for _ in 0..<8 where !notes.isHittable { app.swipeUp() }
         notes.tap()
         // Keep the existing notes while adding this proposed fact.
@@ -863,7 +863,7 @@ import XCTest
         XCTAssertTrue(app.buttons["Save correction"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["Review latest check"].exists)
         XCTAssertFalse(app.staticTexts["The Post confirmed your Buddy Check."].exists)
-        XCTAssertTrue((app.textFields["Your check notes"].value as? String)?.contains("Caller correction retained.") == true)
+        XCTAssertTrue((app.textFields.firstMatch.value as? String)?.contains("Caller correction retained.") == true)
         tap("Save correction", app: app)
         XCTAssertTrue(app.staticTexts["The Post confirmed your Buddy Check."].waitForExistence(timeout: 5))
         capture("Reviewed correction accepted", app: app)
@@ -884,8 +884,7 @@ import XCTest
         tap("Save to Post", app: app)
         XCTAssertTrue(app.staticTexts["The Post confirmed your Buddy Check."].waitForExistence(timeout: 5))
         capture("Connected receipt accepted", app: app)
-        tap("Done", app: app)
-        for _ in 0..<2 { app.navigationBars.firstMatch.buttons.element(boundBy: 0).tap() }
+        tap("Back to Home", app: app)
         tap("Your checks", app: app)
         let record = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Alex Example, No answer")).firstMatch
         XCTAssertTrue(record.waitForExistence(timeout: 5)); record.tap()
@@ -894,9 +893,8 @@ import XCTest
         tap("Save correction", app: app)
         XCTAssertTrue(app.staticTexts["The Post confirmed your Buddy Check."].waitForExistence(timeout: 5))
         capture("Connected correction accepted", app: app)
-        tap("Done", app: app)
-        for _ in 0..<2 { app.navigationBars.firstMatch.buttons.element(boundBy: 0).tap() }
-        tap("Your follow-ups", app: app)
+        tap("Back to Home", app: app)
+        app.tabBars.buttons["Follow-ups"].tap()
         let callback = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Alex Example,")).firstMatch
         XCTAssertTrue(callback.waitForExistence(timeout: 5)); callback.tap()
         tap("Mark follow-up complete", app: app)
@@ -1058,7 +1056,7 @@ import XCTest
         tap("Your checks", app: app)
         XCTAssertTrue(app.staticTexts["You haven't recorded a Buddy Check here yet."].waitForExistence(timeout: 5))
         app.navigationBars.firstMatch.buttons.element(boundBy: 0).tap()
-        tap("Your follow-ups", app: app)
+        app.tabBars.buttons["Follow-ups"].tap()
         XCTAssertTrue(app.staticTexts["You have no recorded follow-ups."].waitForExistence(timeout: 5))
         app.navigationBars.firstMatch.buttons.element(boundBy: 0).tap()
         tap("Hidden suggestions", app: app)

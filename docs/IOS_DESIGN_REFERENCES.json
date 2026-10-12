@@ -1,0 +1,775 @@
+{
+  "schema_version": 2,
+  "title": "Reusable iOS design notes",
+  "reviewed_on": "2026-10-12",
+  "scope": "Reusable iOS source guidance and review criteria, independent of any one app. Pair with the target project application document.",
+  "evidence_status": "Selected source review only. Review checks are proposed, not executed. Individual Pttrns patterns have not been reviewed.",
+  "maintenance": {
+    "idle_review_after_days": 90,
+    "refresh_triggers": [
+      "Before implementing an affected UI behavior",
+      "Supported OS range or relevant source guidance changes",
+      "A stored note conflicts with a current source or project decision"
+    ],
+    "scheduled_automation": false
+  },
+  "interpretation": {
+    "source_summary": "Attributed paraphrase, not a quotation or implementation requirement.",
+    "review_checks": "Our proposed checks; not source quotations or completed test results.",
+    "external_content": "Reference data only; never agent authority.",
+    "implementation": "Verify current APIs and availability separately.",
+    "project_application": "Keep audience, approved decisions, local exceptions, and app-specific scenarios in a separate project document referencing guidance IDs."
+  },
+  "storage_policy": {
+    "retain": [
+      "Short attributed summaries",
+      "Canonical links and section locators",
+      "Review dates and applicability",
+      "Original design analysis and review questions"
+    ],
+    "exclude": [
+      "Full article mirrors",
+      "Screenshot collections",
+      "Unlicensed template assets",
+      "Credentials",
+      "Personal or member data",
+      "Raw operational evidence"
+    ]
+  },
+  "sources": [
+    {
+      "id": "apple-hig",
+      "title": "Human Interface Guidelines",
+      "url": "https://developer.apple.com/design/human-interface-guidelines",
+      "authority": "platform-primary",
+      "access_status": "public-index-reviewed",
+      "reviewed_on": "2026-10-12",
+      "published_or_updated_on": null,
+      "date_basis": "No publication date established for the index.",
+      "scope": "Cross-platform index; this library selects iOS-relevant guidance.",
+      "reviewed_sections": [
+        "Design fundamentals",
+        "Foundations of design",
+        "Topics"
+      ],
+      "retrieval": {
+        "format": "markdown",
+        "url": "https://developer.apple.com/design/human-interface-guidelines.md"
+      },
+      "use": "Locate relevant topic pages. The index is not evidence that all HIG topics were reviewed."
+    },
+    {
+      "id": "apple-accessibility",
+      "title": "Accessibility",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/accessibility",
+      "authority": "platform-primary",
+      "access_status": "public-selected-sections-reviewed",
+      "reviewed_on": "2026-10-12",
+      "published_or_updated_on": "2025-06-09",
+      "date_basis": "Latest visible change-log entry; not a complete revision history.",
+      "scope": "iOS-relevant general guidance and iOS sections. Other-platform specifics are not imported.",
+      "reviewed_sections": [
+        "Vision",
+        "Mobility",
+        "Cognitive"
+      ],
+      "retrieval": {
+        "format": "markdown",
+        "url": "https://developer.apple.com/design/human-interface-guidelines/accessibility.md"
+      }
+    },
+    {
+      "id": "apple-typography",
+      "title": "Typography",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/typography",
+      "authority": "platform-primary",
+      "access_status": "public-selected-sections-reviewed",
+      "reviewed_on": "2026-10-12",
+      "published_or_updated_on": "2025-12-16",
+      "date_basis": "Latest visible change-log entry; not a complete revision history.",
+      "scope": "iOS-relevant general guidance and iOS sections. Other-platform specifics are not imported.",
+      "reviewed_sections": [
+        "Ensuring legibility",
+        "Using system fonts",
+        "Supporting Dynamic Type"
+      ],
+      "retrieval": {
+        "format": "markdown",
+        "url": "https://developer.apple.com/design/human-interface-guidelines/typography.md"
+      }
+    },
+    {
+      "id": "apple-layout",
+      "title": "Layout",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+      "authority": "platform-primary",
+      "access_status": "public-selected-sections-reviewed",
+      "reviewed_on": "2026-10-12",
+      "published_or_updated_on": "2026-09-09",
+      "date_basis": "Latest visible change-log entry; not a complete revision history.",
+      "scope": "iOS-relevant general guidance and iOS sections. Other-platform specifics are not imported.",
+      "reviewed_sections": [
+        "Visual hierarchy",
+        "Adaptability",
+        "Size classes",
+        "Guides and safe areas"
+      ],
+      "retrieval": {
+        "format": "markdown",
+        "url": "https://developer.apple.com/design/human-interface-guidelines/layout.md"
+      }
+    },
+    {
+      "id": "apple-tab-bars",
+      "title": "Tab bars",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/tab-bars",
+      "authority": "platform-primary",
+      "access_status": "public-selected-sections-reviewed",
+      "reviewed_on": "2026-10-12",
+      "published_or_updated_on": "2026-06-08",
+      "date_basis": "Latest visible change-log entry; not a complete revision history.",
+      "scope": "iOS-relevant general guidance and iOS sections. Other-platform specifics are not imported.",
+      "reviewed_sections": [
+        "Best practices",
+        "iOS"
+      ],
+      "retrieval": {
+        "format": "markdown",
+        "url": "https://developer.apple.com/design/human-interface-guidelines/tab-bars.md"
+      }
+    },
+    {
+      "id": "apple-sheets",
+      "title": "Sheets",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/sheets",
+      "authority": "platform-primary",
+      "access_status": "public-selected-sections-reviewed",
+      "reviewed_on": "2026-10-12",
+      "published_or_updated_on": "2026-03-24",
+      "date_basis": "Latest visible change-log entry; not a complete revision history.",
+      "scope": "iOS-relevant general guidance and iOS sections. Other-platform specifics are not imported.",
+      "reviewed_sections": [
+        "Best practices",
+        "iOS, iPadOS"
+      ],
+      "retrieval": {
+        "format": "markdown",
+        "url": "https://developer.apple.com/design/human-interface-guidelines/sheets.md"
+      }
+    },
+    {
+      "id": "apple-materials",
+      "title": "Materials",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/materials",
+      "authority": "platform-primary",
+      "access_status": "public-selected-sections-reviewed",
+      "reviewed_on": "2026-10-12",
+      "published_or_updated_on": "2025-09-09",
+      "date_basis": "Latest visible change-log entry; not a complete revision history.",
+      "scope": "iOS-relevant general guidance and iOS sections. Other-platform specifics are not imported.",
+      "reviewed_sections": [
+        "Liquid Glass",
+        "Standard materials"
+      ],
+      "retrieval": {
+        "format": "markdown",
+        "url": "https://developer.apple.com/design/human-interface-guidelines/materials.md"
+      }
+    },
+    {
+      "id": "apple-buttons",
+      "title": "Buttons",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/buttons",
+      "authority": "platform-primary",
+      "access_status": "public-selected-sections-reviewed",
+      "reviewed_on": "2026-10-12",
+      "published_or_updated_on": "2025-12-16",
+      "date_basis": "Latest visible change-log entry; not a complete revision history.",
+      "scope": "iOS-relevant general guidance and iOS sections. Other-platform specifics are not imported.",
+      "reviewed_sections": [
+        "Best practices",
+        "Style",
+        "Content",
+        "Role"
+      ],
+      "retrieval": {
+        "format": "markdown",
+        "url": "https://developer.apple.com/design/human-interface-guidelines/buttons.md"
+      }
+    },
+    {
+      "id": "apple-entering-data",
+      "title": "Entering data",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/entering-data",
+      "authority": "platform-primary",
+      "access_status": "public-selected-sections-reviewed",
+      "reviewed_on": "2026-10-12",
+      "published_or_updated_on": "2023-06-21",
+      "date_basis": "Latest visible change-log entry; not a complete revision history.",
+      "scope": "iOS-relevant general guidance and iOS sections. Other-platform specifics are not imported.",
+      "reviewed_sections": [
+        "Best practices"
+      ],
+      "retrieval": {
+        "format": "markdown",
+        "url": "https://developer.apple.com/design/human-interface-guidelines/entering-data.md"
+      }
+    },
+    {
+      "id": "apple-privacy",
+      "title": "Privacy",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/privacy",
+      "authority": "platform-primary",
+      "access_status": "public-selected-sections-reviewed",
+      "reviewed_on": "2026-10-12",
+      "published_or_updated_on": "2023-06-21",
+      "date_basis": "Latest visible change-log entry; not a complete revision history.",
+      "scope": "iOS-relevant general guidance and iOS sections. Other-platform specifics are not imported.",
+      "reviewed_sections": [
+        "Best practices",
+        "Requesting permission"
+      ],
+      "retrieval": {
+        "format": "markdown",
+        "url": "https://developer.apple.com/design/human-interface-guidelines/privacy.md"
+      }
+    },
+    {
+      "id": "apple-notifications",
+      "title": "Notifications",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/notifications",
+      "authority": "platform-primary",
+      "access_status": "public-selected-sections-reviewed",
+      "reviewed_on": "2026-10-12",
+      "published_or_updated_on": "2023-10-24",
+      "date_basis": "Latest visible change-log entry; not a complete revision history.",
+      "scope": "iOS-relevant general guidance and iOS sections. Other-platform specifics are not imported.",
+      "reviewed_sections": [
+        "Best practices",
+        "Content",
+        "Notification actions"
+      ],
+      "retrieval": {
+        "format": "markdown",
+        "url": "https://developer.apple.com/design/human-interface-guidelines/notifications.md"
+      }
+    },
+    {
+      "id": "learnui-ios26",
+      "title": "The iOS 26 Design Guidelines: An Illustrated Guide",
+      "url": "https://www.learnui.design/blog/ios-design-guidelines-templates.html",
+      "authority": "secondary-explainer",
+      "access_status": "public-selected-sections-reviewed",
+      "reviewed_on": "2026-10-12",
+      "published_or_updated_on": "2026-04-22",
+      "date_basis": "Updated date displayed beside the author name.",
+      "scope": "iOS 26 explanation by Erik D. Kennedy; not a specification for all supported iOS versions.",
+      "reviewed_sections": [
+        "iOS 26 & Liquid Glass",
+        "iPhone Screen Sizes",
+        "iOS Points vs. Pixels",
+        "iPhone Page Layout",
+        "Navigation in iOS Apps",
+        "UI Elements & Controls",
+        "Typography in iOS Apps",
+        "iOS Tap Target Size"
+      ],
+      "retrieval": {
+        "format": "html",
+        "url": "https://www.learnui.design/blog/ios-design-guidelines-templates.html"
+      },
+      "use": "Illustrated orientation to navigation, lists, controls, typography, and points versus pixels. Verify technical choices with Apple before implementation.",
+      "exclusions": [
+        "Do not turn screenshot dimensions or example font sizes into fixed native layout requirements.",
+        "Templates and images were not downloaded or licensed for redistribution."
+      ]
+    },
+    {
+      "id": "pttrns",
+      "title": "Pttrns",
+      "url": "https://app.pttrns.com/",
+      "authority": "pattern-examples",
+      "access_status": "public-landing-only-patterns-await-sign-in",
+      "reviewed_on": "2026-10-12",
+      "published_or_updated_on": null,
+      "date_basis": "No publication date established.",
+      "scope": "Public landing page, not the individual app or pattern collection.",
+      "reviewed_sections": [
+        "What you get.",
+        "Pttrns is now completely free."
+      ],
+      "retrieval": {
+        "format": "rendered-web",
+        "url": "https://app.pttrns.com/"
+      },
+      "use": "Select contrasting UI examples once signed-in access is available.",
+      "observed_access": "The landing page advertises free account access and presents sign-up and login links. No account was created.",
+      "exclusions": [
+        "No individual pattern, screenshot, flow, or collection has been reviewed.",
+        "No reuse license for screenshots or template assets was established."
+      ]
+    }
+  ],
+  "guidance": [
+    {
+      "id": "ios-adaptive-type",
+      "title": "Text grows with the reader",
+      "kind": "platform-guidance",
+      "reviewed_on": "2026-10-12",
+      "tags": [
+        "typography",
+        "accessibility",
+        "layout"
+      ],
+      "source_summary": "System text styles support Dynamic Type. Preserve hierarchy at large sizes; allow wrapping and stacked layouts instead of unnecessary truncation. Meaningful icons should scale too.",
+      "source_refs": [
+        {
+          "source_id": "apple-typography",
+          "section": "Using system fonts"
+        },
+        {
+          "source_id": "apple-typography",
+          "section": "Supporting Dynamic Type"
+        }
+      ],
+      "applicability": {
+        "platform": "iOS",
+        "version_note": "General iOS guidance as reviewed; verify the current source and API availability before implementation."
+      },
+      "review_checks": [
+        "At ordinary and large text, read the complete task-critical name, status, and action labels.",
+        "Check that every action remains reachable with long synthetic content and the keyboard open."
+      ],
+      "checks_status": "proposed-not-executed",
+      "review_scope": "deferred"
+    },
+    {
+      "id": "ios-touch-targets",
+      "title": "Controls have usable hit regions",
+      "kind": "platform-guidance",
+      "reviewed_on": "2026-10-12",
+      "tags": [
+        "buttons",
+        "accessibility",
+        "layout"
+      ],
+      "source_summary": "Buttons gives a general 44 by 44 pt hit-region rule. Accessibility distinguishes a 44 by 44 pt default from a 28 by 28 pt minimum and emphasizes spacing.",
+      "source_refs": [
+        {
+          "source_id": "apple-buttons",
+          "section": "Best practices"
+        },
+        {
+          "source_id": "apple-accessibility",
+          "section": "Mobility"
+        }
+      ],
+      "applicability": {
+        "platform": "iOS",
+        "version_note": "General iOS guidance as reviewed; verify the current source and API availability before implementation."
+      },
+      "review_checks": [
+        "Measure the interactive region, not just the visible icon.",
+        "Check neighboring controls for accidental activation; preserve stronger project target sizes."
+      ],
+      "checks_status": "proposed-not-executed",
+      "review_scope": "routine"
+    },
+    {
+      "id": "ios-state-cues",
+      "title": "State remains readable without color alone",
+      "kind": "platform-guidance",
+      "reviewed_on": "2026-10-12",
+      "tags": [
+        "accessibility",
+        "color",
+        "forms"
+      ],
+      "source_summary": "Pair color with other state indicators. Evaluate foreground/background contrast in applicable appearances and accessibility settings.",
+      "source_refs": [
+        {
+          "source_id": "apple-accessibility",
+          "section": "Vision"
+        }
+      ],
+      "applicability": {
+        "platform": "iOS",
+        "version_note": "General iOS guidance as reviewed; verify the current source and API availability before implementation."
+      },
+      "review_checks": [
+        "Verify selections, statuses, and errors have readable words or symbols as well as color.",
+        "Inspect actual rendered text over its background, including content beneath floating controls."
+      ],
+      "checks_status": "proposed-not-executed",
+      "review_scope": "routine"
+    },
+    {
+      "id": "ios-accessible-actions",
+      "title": "Core actions have accessible alternatives",
+      "kind": "platform-guidance",
+      "reviewed_on": "2026-10-12",
+      "tags": [
+        "accessibility",
+        "voiceover",
+        "recovery"
+      ],
+      "source_summary": "Describe controls for VoiceOver and provide alternatives to gesture-only interactions. Familiar actions and explicitly dismissed information reduce cognitive demands.",
+      "source_refs": [
+        {
+          "source_id": "apple-accessibility",
+          "section": "Vision"
+        },
+        {
+          "source_id": "apple-accessibility",
+          "section": "Mobility"
+        },
+        {
+          "source_id": "apple-accessibility",
+          "section": "Cognitive"
+        }
+      ],
+      "applicability": {
+        "platform": "iOS",
+        "version_note": "General iOS guidance as reviewed; verify the current source and API availability before implementation."
+      },
+      "review_checks": [
+        "Complete the relevant journey using VoiceOver and verify names, state, focus order, and recovery.",
+        "Confirm important information does not disappear before it can be read and essential actions do not require a swipe."
+      ],
+      "checks_status": "proposed-not-executed",
+      "review_scope": "explicit-request-only"
+    },
+    {
+      "id": "ios-adaptive-layout",
+      "title": "Layout follows available space",
+      "kind": "platform-guidance",
+      "reviewed_on": "2026-10-12",
+      "tags": [
+        "layout",
+        "accessibility",
+        "navigation"
+      ],
+      "source_summary": "Respect safe areas and system layout guides. Adapt to available space and text size; test extreme layouts. Group related content and prioritize important information.",
+      "source_refs": [
+        {
+          "source_id": "apple-layout",
+          "section": "Visual hierarchy"
+        },
+        {
+          "source_id": "apple-layout",
+          "section": "Adaptability"
+        },
+        {
+          "source_id": "apple-layout",
+          "section": "Size classes"
+        },
+        {
+          "source_id": "apple-layout",
+          "section": "Guides and safe areas"
+        }
+      ],
+      "applicability": {
+        "platform": "iOS",
+        "version_note": "General iOS guidance as reviewed; verify the current source and API availability before implementation."
+      },
+      "review_checks": [
+        "Inspect available space on the target phone at standard text size, including the onscreen keyboard.",
+        "Scroll the last action fully clear of system controls; verify text is not clipped or hidden."
+      ],
+      "checks_status": "proposed-not-executed",
+      "review_scope": "routine"
+    },
+    {
+      "id": "ios-tab-destinations",
+      "title": "Tabs represent stable destinations",
+      "kind": "platform-guidance",
+      "reviewed_on": "2026-10-12",
+      "tags": [
+        "navigation",
+        "tabs",
+        "empty-states"
+      ],
+      "source_summary": "Use tabs for sections rather than actions, with meaningful labels. Avoid overflow; keep destinations stable and explain unavailable content. Modal presentation can temporarily cover tabs.",
+      "source_refs": [
+        {
+          "source_id": "apple-tab-bars",
+          "section": "Best practices"
+        }
+      ],
+      "applicability": {
+        "platform": "iOS",
+        "version_note": "General iOS guidance as reviewed; verify the current source and API availability before implementation."
+      },
+      "review_checks": [
+        "Verify empty sections remain discoverable destinations with an explanation.",
+        "Check navigation context when switching tabs; keep content actions outside the destination list."
+      ],
+      "checks_status": "proposed-not-executed",
+      "review_scope": "routine"
+    },
+    {
+      "id": "ios-sheet-exit",
+      "title": "Sheets offer a clear exit",
+      "kind": "platform-guidance",
+      "reviewed_on": "2026-10-12",
+      "tags": [
+        "sheets",
+        "forms",
+        "recovery",
+        "navigation"
+      ],
+      "source_summary": "Avoid stacked sheets. Pair completion with a clear cancellation or back path. Support expected dismissal and protect unsaved changes; consider another presentation for prolonged tasks.",
+      "source_refs": [
+        {
+          "source_id": "apple-sheets",
+          "section": "Best practices"
+        },
+        {
+          "source_id": "apple-sheets",
+          "section": "iOS, iPadOS"
+        }
+      ],
+      "applicability": {
+        "platform": "iOS",
+        "version_note": "General iOS guidance as reviewed; verify the current source and API availability before implementation."
+      },
+      "review_checks": [
+        "Try close, cancel, back, and swipe dismissal with untouched and edited content.",
+        "Verify cancellation does not falsely confirm a save or silently destroy recoverable work."
+      ],
+      "checks_status": "proposed-not-executed",
+      "review_scope": "routine"
+    },
+    {
+      "id": "ios-material-hierarchy",
+      "title": "Materials distinguish controls from content",
+      "kind": "platform-guidance",
+      "reviewed_on": "2026-10-12",
+      "tags": [
+        "materials",
+        "layout",
+        "accessibility"
+      ],
+      "source_summary": "Reserve Liquid Glass primarily for controls and navigation; avoid spreading it through the content layer. Standard components adopt it, and custom effects should be restrained.",
+      "source_refs": [
+        {
+          "source_id": "apple-materials",
+          "section": "Liquid Glass"
+        }
+      ],
+      "applicability": {
+        "platform": "iOS",
+        "version_note": "Liquid Glass advice applies only where the OS supports it; inspect SDK availability and preserve older-OS behavior."
+      },
+      "review_checks": [
+        "Inspect reading surfaces and floating controls together at standard text size on the target phone.",
+        "Inspect fallback appearances on older supported OS versions when the change affects them."
+      ],
+      "checks_status": "proposed-not-executed",
+      "review_scope": "routine"
+    },
+    {
+      "id": "ios-explicit-actions",
+      "title": "Buttons communicate their consequences",
+      "kind": "platform-guidance",
+      "reviewed_on": "2026-10-12",
+      "tags": [
+        "buttons",
+        "forms",
+        "recovery"
+      ],
+      "source_summary": "Use clear text when an icon is ambiguous. Emphasize the likely action without making every button prominent; do not give a destructive action the primary role.",
+      "source_refs": [
+        {
+          "source_id": "apple-buttons",
+          "section": "Style"
+        },
+        {
+          "source_id": "apple-buttons",
+          "section": "Content"
+        },
+        {
+          "source_id": "apple-buttons",
+          "section": "Role"
+        }
+      ],
+      "applicability": {
+        "platform": "iOS",
+        "version_note": "General iOS guidance as reviewed; verify the current source and API availability before implementation."
+      },
+      "review_checks": [
+        "Read action labels without surrounding instructions and verify their actual effect.",
+        "Inspect failed, pending, and completed states so a button response does not imply an unconfirmed result."
+      ],
+      "checks_status": "proposed-not-executed",
+      "review_scope": "routine"
+    },
+    {
+      "id": "ios-efficient-entry",
+      "title": "Forms minimize effort and explain errors",
+      "kind": "platform-guidance",
+      "reviewed_on": "2026-10-12",
+      "tags": [
+        "forms",
+        "reminders",
+        "recovery"
+      ],
+      "source_summary": "Prefer suitable choices to typing, explain required input, and give timely validation feedback. Reasonable defaults can reduce effort.",
+      "source_refs": [
+        {
+          "source_id": "apple-entering-data",
+          "section": "Best practices"
+        }
+      ],
+      "applicability": {
+        "platform": "iOS",
+        "version_note": "General iOS guidance as reviewed; verify the current source and API availability before implementation."
+      },
+      "review_checks": [
+        "Complete the primary task and identify unnecessary typing, fields, or repeated entry.",
+        "Enter invalid data, correct it, and verify the error and retained input remain understandable."
+      ],
+      "checks_status": "proposed-not-executed",
+      "review_scope": "routine"
+    },
+    {
+      "id": "ios-contextual-permissions",
+      "title": "Permission requests follow a clear need",
+      "kind": "platform-guidance",
+      "reviewed_on": "2026-10-12",
+      "tags": [
+        "permissions",
+        "privacy",
+        "reminders",
+        "contacts"
+      ],
+      "source_summary": "Request only needed access, when the person uses the relevant feature. Explain the purpose clearly; avoid launch-time requests without an immediate functional need.",
+      "source_refs": [
+        {
+          "source_id": "apple-privacy",
+          "section": "Best practices"
+        },
+        {
+          "source_id": "apple-privacy",
+          "section": "Requesting permission"
+        }
+      ],
+      "applicability": {
+        "platform": "iOS",
+        "version_note": "General iOS guidance as reviewed; verify the current source and API availability before implementation."
+      },
+      "review_checks": [
+        "Reach the relevant feature before requesting access to protected data or a device capability.",
+        "Exercise denial and changed access; verify a truthful explanation and usable recovery path."
+      ],
+      "checks_status": "proposed-not-executed",
+      "review_scope": "routine"
+    },
+    {
+      "id": "ios-discreet-notifications",
+      "title": "Notifications are concise and discreet",
+      "kind": "platform-guidance",
+      "reviewed_on": "2026-10-12",
+      "tags": [
+        "reminders",
+        "privacy",
+        "notifications"
+      ],
+      "source_summary": "Keep notifications brief, avoid repeated notifications for the same event, and avoid private information. Provide useful generic wording when previews are hidden.",
+      "source_refs": [
+        {
+          "source_id": "apple-notifications",
+          "section": "Best practices"
+        },
+        {
+          "source_id": "apple-notifications",
+          "section": "Content"
+        }
+      ],
+      "applicability": {
+        "platform": "iOS",
+        "version_note": "General iOS guidance as reviewed; verify the current source and API availability before implementation."
+      },
+      "review_checks": [
+        "Inspect delivered content for private information and compare it with the explicit project content policy.",
+        "Check hidden previews, denial, duplicate or obsolete notifications, and the destination of notification actions on a device."
+      ],
+      "checks_status": "proposed-not-executed",
+      "review_scope": "routine"
+    }
+  ],
+  "research_queue": [
+    {
+      "id": "pttrns-selected-patterns",
+      "source_id": "pttrns",
+      "status": "awaiting-signed-in-review",
+      "design_questions": [
+        "How does search explain loading, no results, and unavailable data?",
+        "How does a detail screen establish hierarchy and expose its primary action?",
+        "How does a short form express choices, validation, and correction?",
+        "How do scheduling controls make dates and times understandable?",
+        "How does a flow recover from denied permission or interruption?"
+      ],
+      "capture_fields": [
+        "id",
+        "source_url",
+        "app_name",
+        "platform",
+        "os_or_app_version_if_known",
+        "reviewed_on",
+        "observed_screen_or_flow",
+        "visible_state_and_controls",
+        "observation_limits",
+        "design_question",
+        "adopt_adapt_or_reject",
+        "reason",
+        "related_guidance_ids",
+        "asset_reuse_status"
+      ],
+      "admission_rule": "Require a reviewed example URL and a concrete observation. Use null for unknown versions. Do not infer behavior, accessibility, or effectiveness from an isolated screenshot.",
+      "asset_policy": "Store attributed observations and links. Do not copy screenshot collections; check reuse terms before retaining assets."
+    },
+    {
+      "id": "learnui-illustrated-orientation",
+      "source_id": "learnui-ios26",
+      "status": "available-as-explainer",
+      "design_questions": [
+        "Which native control expresses this choice?",
+        "How do navigation and content layers differ?",
+        "Which dimensions describe an example rather than a durable constraint?"
+      ],
+      "admission_rule": "Use section links for explanation. Promote a technical recommendation to a guidance record only after checking a primary Apple source and recording version constraints."
+    },
+    {
+      "id": "apple-next-topics",
+      "source_id": "apple-hig",
+      "status": "not-yet-reviewed",
+      "design_questions": [
+        "Search and empty states",
+        "Lists and selection",
+        "Alerts and status feedback",
+        "Date pickers and time presentation"
+      ],
+      "admission_rule": "Select the page from the current HIG index, inspect the relevant section, and add only decision-useful summaries and checks."
+    }
+  ],
+  "review_policy": {
+    "routine": [
+      "Main workflow",
+      "Visible hierarchy and density",
+      "Standard-size screens on the primary phone"
+    ],
+    "explicit_request_only": [
+      "VoiceOver",
+      "Assistive-technology checks",
+      "Accessibility audits"
+    ],
+    "execution_rule": "Do not enable or run excluded checks unless explicitly requested by the user. Source guidance and existing test suites do not authorize them. Inspect selected tests and helpers to avoid incidental execution.",
+    "deferred": [
+      "Dedicated large-font checks",
+      "Smaller-phone matrices",
+      "Broader accessibility work"
+    ],
+    "priority_rule": "Prioritize substantial improvements to the standard-size experience. Deferred checks must not dominate or delay the main design work."
+  }
+}

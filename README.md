@@ -47,6 +47,10 @@ or establish current backend behavior. There is no CI or distributed build yet.
 - [Development](docs/DEVELOPMENT.md): reproducible package, build, and UI-test commands.
 - [Implementation](docs/IMPLEMENTATION.md): durable synthetic workflow design.
 - [Buddy Check design](docs/BUDDY_CHECK_DESIGN.md): native interaction design.
+- [Reusable iOS design notes](docs/IOS_DESIGN_REFERENCES.md): source-linked
+  guidance and searchable review criteria for iOS projects.
+- [Buddy Checks design application](docs/BUDDY_CHECK_DESIGN_REFERENCES.md): how
+  those notes apply to this app's audience, decisions, and review scenarios.
 - [Design harness](design/README.md): a separate session-only SwiftUI study.
 
 ## Build

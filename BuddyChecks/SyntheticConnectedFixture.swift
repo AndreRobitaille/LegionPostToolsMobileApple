@@ -98,6 +98,16 @@ import BuddyCheckContacts
     static func account() async throws -> ConnectedAccount {
         let nativeCompany = try nativeCompanyReview()
         let contactDirectory = try contactCreationDirectory()
+        let workflowDirectory: URL?
+        #if targetEnvironment(simulator)
+        let environment = ProcessInfo.processInfo.environment
+        if environment["BUDDY_CHECKS_CONNECTED_WORKFLOW_STORE"] == "1",
+           let store = environment["BUDDY_CHECKS_TEST_STORE"].flatMap(UUID.init(uuidString:)) {
+            workflowDirectory = URL.applicationSupportDirectory.appendingPathComponent("BuddyChecks/UITests/\(store.uuidString)/Workflow", isDirectory: true)
+        } else { workflowDirectory = nil }
+        #else
+        workflowDirectory = nil
+        #endif
         let interruption = ProcessInfo.processInfo.environment["BUDDY_CHECKS_CONNECTED_CREATION_INTERRUPTION"]
         if let interruption {
             guard let contactDirectory, ["arm", "resume"].contains(interruption) else { throw ClientError.invalidResponse }
@@ -133,6 +143,16 @@ import BuddyCheckContacts
         if let contactDirectory {
             vault = DeviceKeychain(service: "org.wipost165.buddychecks.native-creation." + contactDirectory.deletingLastPathComponent().lastPathComponent)
             journal = FixtureContactsJournal(base: EncryptedJournal(directory: contactDirectory, vault: vault), directory: contactDirectory)
+        } else if let workflowDirectory {
+            // Unsigned simulator UI builds cannot use Keychain entitlements.
+            // Persist only this isolated fixture's synthetic secrets; exercise
+            // the production encrypted journal without changing DeviceKeychain.
+            #if targetEnvironment(simulator)
+            vault = FixtureWorkflowVault(directory: workflowDirectory)
+            #else
+            throw ClientError.invalidInput
+            #endif
+            journal = EncryptedJournal(directory: workflowDirectory, vault: vault)
         } else {
             vault = persistentReminder ? DeviceKeychain() : FixtureVault()
             journal = persistentReminder ? EncryptedJournal(directory: directory, vault: vault) : FixtureJournal()
@@ -144,7 +164,7 @@ import BuddyCheckContacts
             }
             return SystemReminderScheduler(namespace: contactDirectory.map { "test.contacts." + $0.deletingLastPathComponent().lastPathComponent } ?? namespace)
         })
-        if persistentReminder || contactDirectory != nil {
+        if persistentReminder || contactDirectory != nil || workflowDirectory != nil {
             try await account.restore()
             if account.session != nil { return account }
         }
@@ -251,6 +271,29 @@ import BuddyCheckContacts
         func purge(scope: AccountScope) throws { value = nil }
     }
 }
+
+#if targetEnvironment(simulator)
+@MainActor private final class FixtureWorkflowVault: SecretVault {
+    let directory: URL
+    init(directory: URL) { self.directory = directory }
+    private var file: URL { directory.appendingPathComponent("synthetic-vault.json") }
+    private func values() throws -> [String: Data] {
+        guard FileManager.default.fileExists(atPath: file.path) else { return [:] }
+        return try JSONDecoder().decode([String: Data].self, from: Data(contentsOf: file))
+    }
+    func read(_ key: String) throws -> Data? { try values()[key] }
+    func write(_ data: Data, key: String) throws {
+        var next = try values(); next[key] = data; try save(next)
+    }
+    func remove(_ key: String) throws {
+        var next = try values(); next[key] = nil; try save(next)
+    }
+    private func save(_ next: [String: Data]) throws {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try JSONEncoder().encode(next).write(to: file, options: .atomic)
+    }
+}
+#endif
 
 /// Observe only this isolated fixture's opaque links and its verified new card.
 /// Real Keychain/encrypted persistence remains responsible for restoration.

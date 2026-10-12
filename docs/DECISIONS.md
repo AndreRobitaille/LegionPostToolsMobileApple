@@ -25,8 +25,34 @@ handoffs and operational verification records are retained privately.
 - Home and Follow-ups are the main tabs. The person icon opens Account and Post settings.
 - Use one shared title2-bold person header with 20-point padding and Dynamic Type.
 - On newer supported iOS versions, use the native hard bottom scroll-edge treatment
-  to keep lower actions legible near floating tabs. Review smaller layouts and VoiceOver.
+  to keep lower actions legible near floating tabs. Prioritize standard-size screens.
 - Use the approved visible-hand Icon Composer asset already included in the app.
+- The connected recording screen groups outcomes, keeps method/time editable
+  behind a compact summary, discloses optional notes and follow-up time editing,
+  and holds Save above the native tabs. It never selects an outcome automatically.
+- Connected confirmation uses the accepted receipt's outcome, method, event time
+  and follow-up. Phone-alert status is separate. Home, follow-up and correction
+  are explicit next actions; correction first refreshes the current Post record.
+- Home prioritizes pending/rejected submissions and named unfinished work, then
+  the earliest open caller-owned follow-up and three recently recorded checks.
+  Complete pagination and merge logical-record revisions before ranking. These
+  summaries remain in memory; only displayed people are resolved, and failed
+  reads never claim there is no work. Hidden suggestions lives in Suggest someone.
+- Member and follow-up screens lead with contact/recording actions. Conversation
+  help is expandable; Contacts, refresh and phone-alert controls are secondary.
+
+## Design review scope
+
+- Andre's latest October 12 instruction makes standard-size iPhone 17 Pro design
+  and substantial main-workflow improvements the priority. Large-font checks,
+  smaller-phone matrices and broader accessibility work come later; they must
+  not dominate or delay the main design work.
+- Do not enable VoiceOver or run assistive-technology checks or accessibility
+  audits unless Andre explicitly requests them. Use focused UI test selections
+  rather than broad suites that include these checks.
+- This supersedes earlier review requirements in the handoff and design plans.
+  Retained source notes and historical findings are reference material, not a
+  requirement to resume that work.
 
 ## Durable synthetic workflow
 

@@ -1,24 +1,26 @@
 import SwiftUI
 import BuddyCheckAPI
 
-private enum ConnectedRoute: Hashable { case search, suggestion, person(Int), draft, history, followUps, snoozes }
+private enum ConnectedRoute: Hashable { case search, suggestion, draft }
 
 struct ConnectedMainView: View {
     let account: ConnectedAccount
     let session: MobileSession
     let openSettings: () -> Void
-    @State private var tab = 0
+    @State private var navigation = ConnectedNavigation()
     var body: some View {
-        TabView(selection: $tab) {
+        @Bindable var navigation = navigation
+        TabView(selection: $navigation.tab) {
             NavigationStack {
                 ConnectedHome(account: account, session: session).toolbar { settingsButton }
-            }.tabItem { Label("Home", systemImage: "house") }.tag(0)
+            }.id(navigation.homeIdentity).tabItem { Label("Home", systemImage: "house") }.tag(0)
             NavigationStack {
                 ConnectedFollowUps(account: account).toolbar { settingsButton }
-            }.tabItem { Label("Follow-ups", systemImage: "calendar") }.tag(1)
+            }.id(navigation.followUpsIdentity).tabItem { Label("Follow-ups", systemImage: "calendar") }.tag(1)
         }
+        .environment(navigation)
         .onChange(of: ReminderInbox.shared.link) { _, link in
-            if link?.namespace.hasPrefix("connected.") == true { tab = 0 }
+            if link?.namespace.hasPrefix("connected.") == true { navigation.tab = 0 }
         }
     }
     private var settingsButton: some ToolbarContent {
@@ -42,7 +44,7 @@ struct ConnectedHome: View {
     @State private var reminderError: String?
     var body: some View {
         Page {
-            Text(session.installation.name).font(.largeTitle.bold()).foregroundStyle(Palette.navy)
+            Text(session.installation.name).font(.title2.bold()).foregroundStyle(Palette.navy)
             if let journal = account.journal {
                 if journal.snapshot.pending != nil {
                     WorkingSurface {
@@ -64,32 +66,24 @@ struct ConnectedHome: View {
                                 .frame(minHeight: 48).foregroundStyle(Palette.red)
                         }
                     }
-                } else if journal.snapshot.draft != nil {
-                    Button { route = .draft } label: { ActionRow(title: "Continue unfinished check") }.buttonStyle(RowActionStyle())
+                } else if let draft = journal.snapshot.draft {
+                    ConnectedDraftAction(account: account, draft: draft) { route = .draft }
                 } else {
-                    Button { route = .search } label: { ActionRow(title: "Check on someone", subtitle: "Search the Post member list") }.buttonStyle(RowActionStyle())
-                    Button { route = .suggestion } label: { ActionRow(title: "Suggest someone", subtitle: "From Post records") }.buttonStyle(RowActionStyle())
-                }
-                if let receipt = journal.lastReceipt {
-                    WorkingSurface {
-                        Label("Saved to the Post", systemImage: "checkmark.circle.fill").font(.headline)
-                        Text(dateText(receipt.acceptedAt))
-                    }
+                    Button { route = .search } label: {
+                        ActionRow(title: "Check on someone", subtitle: "Search the Post member list")
+                    }.buttonStyle(ActionStyle())
+                    Button { route = .suggestion } label: {
+                        ActionRow(title: "Suggest someone", subtitle: "From Post records")
+                    }.buttonStyle(.plain).foregroundStyle(Palette.action).frame(minHeight: 48)
                 }
             }
-            Button { route = .history } label: { ActionRow(title: "Your checks") }.buttonStyle(RowActionStyle())
-            Button { route = .followUps } label: { ActionRow(title: "Your follow-ups") }.buttonStyle(RowActionStyle())
-            Button { route = .snoozes } label: { ActionRow(title: "Hidden suggestions") }.buttonStyle(RowActionStyle())
+            ConnectedHomeActivity(account: account)
         }.navigationTitle("Buddy Checks")
             .navigationDestination(item: $route) { route in
                 switch route {
                 case .search: ConnectedSearch(account: account)
                 case .suggestion: ConnectedSuggestion(account: account)
-                case .person(let id): ConnectedPerson(account: account, personID: id)
                 case .draft: ConnectedCheckForm(account: account)
-                case .history: ConnectedHistory(account: account)
-                case .followUps: ConnectedFollowUps(account: account)
-                case .snoozes: ConnectedSnoozes(account: account)
                 }
             }
             .navigationDestination(isPresented: $reviewingCorrection) {
@@ -216,6 +210,7 @@ private struct ConnectedSuggestion: View {
             }
             if let error { Text(error) }
             if busy { ProgressView("Checking Post records") }
+            NavigationLink("Hidden suggestions") { ConnectedSnoozes(account: account) }.frame(minHeight: 48)
             if !busy { Button("Refresh suggestion") { Task { await load() } }.buttonStyle(ActionStyle(primary: false)) }
         }.navigationTitle("Suggested member").task { await load() }
             .navigationDestination(item: $selected) { ConnectedPerson(account: account, personID: $0) }
@@ -242,12 +237,6 @@ private struct ConnectedPerson: View {
                 if !card.eligibility.eligible {
                     Text(eligibilityText(card.eligibility.reason))
                 }
-                if card.eligibility.eligible {
-                    WorkingSurface {
-                        SectionTitle("A way to start")
-                        Text("“Hi \(card.firstName), I'm checking in from the Post. How have you been?”")
-                    }
-                }
                 if let phone = card.phone {
                     Text(phone).textSelection(.enabled)
                     #if !targetEnvironment(simulator)
@@ -268,13 +257,20 @@ private struct ConnectedPerson: View {
                     .disabled(busy || card.eligibility.reason == "contact_paused" || account.journal?.snapshot.pending != nil)
                 if card.exportAvailable {
                     NavigationLink("Phone contact") { ConnectedContactsScreen(account: account, personID: personID) }
-                        .buttonStyle(ActionStyle(primary: false))
+                        .frame(minHeight: 48)
                 }
-                Text("Record what actually happened. Opening a phone number does not mean you talked.").font(.footnote)
+                if card.eligibility.eligible {
+                    WorkingSurface {
+                        DisclosureGroup("A way to start") {
+                            Text("“Hi \(card.firstName), I'm checking in from the Post. How have you been?”")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                }
             }
             if let error { Text(error) }
             if busy { ProgressView("Checking member access") }
-            if !busy { Button("Refresh member") { Task { await load() } }.buttonStyle(ActionStyle(primary: false)) }
+            if !busy { Button("Refresh member", systemImage: "arrow.clockwise") { Task { await load() } }.frame(minHeight: 48) }
         }.navigationTitle("Buddy Check").task { await load() }
             .navigationDestination(isPresented: $showDraft) { ConnectedCheckForm(account: account) }
     }
@@ -297,140 +293,7 @@ private struct ConnectedPerson: View {
     }
 }
 
-private struct ConnectedCheckForm: View {
-    let account: ConnectedAccount
-    @State private var draft: ConnectedDraft?
-    @State private var card: PersonCardResponse?
-    @State private var error: String?
-    @State private var busy = false
-    @State private var accepted = false
-    @State private var discard = false
-    @State private var reviewingCorrection = false
-    @FocusState private var notesFocused: Bool
-    @Environment(\.dismiss) private var dismiss
-    var body: some View {
-        Page {
-            if let card { PersonCard(name: card.name) }
-            if accepted {
-                SectionTitle("Saved to the Post")
-                Text("The Post confirmed your Buddy Check.")
-                Button("Done") { dismiss() }.buttonStyle(ActionStyle())
-            } else if let draft {
-                WorkingSurface {
-                    Text("How did you check in?").font(.headline)
-                    Picker("Contact method", selection: binding(draft, \.channel)) {
-                        Text("Phone").tag(CheckChannel.phone); Text("Text").tag(CheckChannel.text); Text("In person").tag(CheckChannel.inPerson)
-                    }.pickerStyle(.menu)
-                    Text("When did it happen?").font(.headline)
-                    if let day = draft.correction?.legacyDate { Text(day + " · time not recorded") }
-                    else {
-                        DateTimeFields(selection: binding(draft, \.occurredAt), future: false)
-                            .environment(\.timeZone, TimeZone(identifier: draft.entryZone) ?? .current)
-                        Text(timeZoneText(draft.entryZone)).font(.footnote)
-                    }
-                }.disabled(busy || account.journal?.snapshot.pending != nil)
-                WorkingSurface {
-                    Text("What happened?").font(.headline)
-                    ForEach(CheckResult.allCases, id: \.self) { outcome in
-                        Button {
-                            var next = draft; next.outcome = outcome; saveDraft(next)
-                        } label: { Label(outcomeText(outcome.rawValue), systemImage: draft.outcome == outcome ? "checkmark.circle.fill" : "circle").frame(maxWidth: .infinity, alignment: .leading) }
-                            .buttonStyle(ActionStyle(primary: draft.outcome == outcome))
-                            .accessibilityAddTraits(draft.outcome == outcome ? .isSelected : [])
-                    }
-                    TextField("Your check notes (optional)", text: binding(draft, \.notes), axis: .vertical).lineLimit(3...8)
-                        .accessibilityLabel("Your check notes")
-                        .focused($notesFocused)
-                }
-                .disabled(busy || account.journal?.snapshot.pending != nil)
-                if draft.correction == nil { WorkingSurface {
-                    Toggle("Set a follow-up", isOn: Binding(get: { draft.followUp != nil }, set: { on in
-                        var next = draft
-                        next.followUp = on ? try? FollowUpTime(dueAt: Date().addingTimeInterval(86400), entryZone: TimeZone.current.identifier) : nil
-                        saveDraft(next)
-                    }))
-                    if let followUp = draft.followUp {
-                        DateTimeFields(selection: Binding(get: { followUp.dueAt }, set: { value in
-                            var next = draft; next.followUp = try? FollowUpTime(dueAt: value, entryZone: followUp.entryZone); saveDraft(next)
-                        }), future: true).environment(\.timeZone, TimeZone(identifier: followUp.entryZone) ?? .current)
-                        Text(timeZoneText(followUp.entryZone)).font(.footnote)
-                        Text("This adds a follow-up to your Post account. Phone alerts are not enabled.").font(.footnote)
-                    }
-                }.disabled(busy || account.journal?.snapshot.pending != nil) }
-                Button(busy ? "Saving…" : (draft.correction == nil ? "Save to Post" : "Save correction")) { Task { await submit() } }.buttonStyle(ActionStyle())
-                    .disabled(busy || draft.outcome == nil || card == nil || account.journal?.snapshot.pending != nil)
-                if account.journal?.snapshot.pending != nil {
-                    if account.journal?.canReviewStaleCorrection == true {
-                        SectionTitle("This check changed at the Post")
-                        Text("Your correction was not saved. Review the current check before continuing with your changes.")
-                        Button("Review latest check") { reviewingCorrection = true }.buttonStyle(ActionStyle())
-                    } else {
-                    Text(account.journal?.rejection == nil
-                         ? "Submission pending. It may already have been accepted by the Post."
-                         : "The Post rejected this submission. Your proposed changes are still on this iPhone.")
-                    Button("Check submission") { Task {
-                        guard let journal = account.journal else { return }
-                        busy = true; defer { busy = false }
-                        do {
-                            _ = try await account.perform { client, token in try await journal.reconcile(client: client, token: token) }
-                            accepted = true; error = nil
-                        } catch { self.error = safeMessage(error) }
-                    } }.buttonStyle(ActionStyle()).disabled(busy)
-                    }
-                } else {
-                    Button("Discard unfinished check", role: .destructive) { discard = true }.frame(minHeight: 48).foregroundStyle(Palette.red)
-                }
-            }
-            if let error { Text(error) }
-        }.navigationTitle(draft?.correction == nil ? "Record a check" : "Correct check")
-            .scrollDismissesKeyboard(.interactively)
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("Done") { notesFocused = false }.tint(Palette.action)
-                }
-            }
-            .navigationDestination(isPresented: $reviewingCorrection) {
-                ConnectedCorrectionReview(account: account) { replacement in
-                    draft = replacement; error = nil; reviewingCorrection = false
-                }
-            }
-            .task {
-                draft = account.journal?.snapshot.draft
-                if let draft {
-                    do { card = try await account.perform { client, token in try await client.person(draft.personID, token: token) } }
-                    catch { self.error = safeMessage(error) }
-                }
-            }
-            .confirmationDialog("Discard this unfinished check?", isPresented: $discard, titleVisibility: .visible) {
-                Button("Discard check", role: .destructive) {
-                    do { try account.journal?.discardDraft(); dismiss() }
-                    catch { self.error = safeMessage(error) }
-                }
-            }
-    }
-    private func binding<T>(_ source: ConnectedDraft, _ key: WritableKeyPath<ConnectedDraft, T>) -> Binding<T> {
-        Binding(get: { (draft ?? source)[keyPath: key] }, set: { value in
-            var next = draft ?? source; next[keyPath: key] = value; saveDraft(next)
-        })
-    }
-    private func saveDraft(_ next: ConnectedDraft) {
-        do { guard let journal = account.journal else { throw ClientError.invalidInput }; try journal.saveDraft(next); draft = next; error = nil }
-        catch { self.error = safeMessage(error) }
-    }
-    private func submit() async {
-        guard let draft, let journal = account.journal else { return }
-        notesFocused = false
-        busy = true; error = nil; defer { busy = false }
-        do {
-            try journal.prepare(draft.mutation())
-            _ = try await account.perform { client, token in try await journal.reconcile(client: client, token: token) }
-            accepted = true
-        } catch { self.error = safeMessage(error) }
-    }
-}
-
-private struct ConnectedHistory: View {
+struct ConnectedHistory: View {
     let account: ConnectedAccount
     @State private var records: [ContactRecord] = []
     @State private var cursor: String?
@@ -569,7 +432,7 @@ private struct ConnectedHistoryRow: View {
     }
 }
 
-private struct ConnectedRecordDetail: View {
+struct ConnectedRecordDetail: View {
     let account: ConnectedAccount
     let initial: ContactRecord
     @State private var record: ContactRecord?
@@ -602,19 +465,7 @@ private struct ConnectedRecordDetail: View {
         busy = true; error = nil; record = nil; name = nil; defer { busy = false }
         do {
             name = try await account.perform { client, token in try await client.person(initial.personId, token: token).name }
-            var cursor: String?
-            var seen = Set<String>()
-            var latest: ContactRecord?
-            repeat {
-                let page = try await account.perform { client, token in try await client.revisions(contactID: initial.id, cursor: cursor, token: token) }
-                for candidate in page.items where candidate.id == initial.id {
-                    if candidate.revision > (latest?.revision ?? 0) { latest = candidate }
-                }
-                cursor = page.nextCursor
-                if let cursor, !seen.insert(cursor).inserted { throw ClientError.invalidResponse }
-            } while cursor != nil
-            guard let latest else { throw ClientError.invalidResponse }
-            record = latest
+            record = try await account.perform { client, token in try await client.latestContact(initial, token: token) }
         } catch { self.error = safeMessage(error) }
     }
 }
@@ -633,7 +484,7 @@ private struct ConnectedFollowUpRow: View {
     }
 }
 
-private struct ConnectedFollowUpDetail: View {
+struct ConnectedFollowUpDetail: View {
     let account: ConnectedAccount
     let initial: FollowUpRecord
     var reminderChanged = false
@@ -655,10 +506,7 @@ private struct ConnectedFollowUpDetail: View {
                 Text(dateText(record.dueAt)).font(.title2.bold())
                 Text(record.status.rawValue.capitalized)
                 if record.status == .open {
-                    if let reminders = account.reminders {
-                        ConnectedReminderControls(record: record, reminders: reminders)
-                    }
-                    NavigationLink("Open member") { ConnectedPerson(account: account, personID: record.personId) }.buttonStyle(ActionStyle())
+                    NavigationLink("Check on this member") { ConnectedPerson(account: account, personID: record.personId) }.buttonStyle(ActionStyle())
                     Button("Mark follow-up complete") { Task { await change(.complete) } }.buttonStyle(ActionStyle(primary: false))
                         .disabled(busy || account.journal?.snapshot.pending != nil)
                     if rescheduling {
@@ -675,6 +523,9 @@ private struct ConnectedFollowUpDetail: View {
                     Button("Cancel follow-up", role: .destructive) { cancelling = true }.foregroundStyle(Palette.red).frame(minHeight: 48)
                         .disabled(busy || account.journal?.snapshot.pending != nil)
                     Text("Completing a follow-up does not record a Buddy Check. Record what happened separately.").font(.footnote)
+                    if let reminders = account.reminders {
+                        WorkingSurface { ConnectedReminderControls(record: record, reminders: reminders) }
+                    }
                 }
             }
             if let error { Text(error) }

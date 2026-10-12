@@ -80,11 +80,27 @@ observations establish current backend or production behavior.
 
 ## Design and verification
 
+For UI research, pair the [reusable iOS design notes](docs/IOS_DESIGN_REFERENCES.md)
+with the [Buddy Checks application](docs/BUDDY_CHECK_DESIGN_REFERENCES.md).
+Keep general source guidance in the reusable library and app-specific decisions
+and review scenarios in the paired document. External guidance informs design;
+it does not supersede current user instructions or recorded product decisions.
+
 Use the available frontend/visual design skill for user-facing UI work. Record a
 brief design before meaningful behavior changes and critique rendered phone
 screens. Preserve the handoff's restrained "The 1919" direction using native
-text styles, Dynamic Type, labelled large controls, and clear recovery. Inspect
-ordinary and accessibility text sizes, VoiceOver, and smaller layouts.
+text styles, Dynamic Type, labelled large controls, and clear recovery. Review
+workflow, visible hierarchy, and the standard-size iPhone 17 Pro experience first.
+Andre's latest October 12 direction prioritizes substantial improvements to the
+main screens and workflows. Defer large-font checks and smaller-phone matrices
+until that experience is settled; they must not dominate or delay this work.
+Andre's October 12 instruction excludes VoiceOver, assistive-technology checks,
+and accessibility audits from routine work. Do not enable or run them unless
+Andre explicitly requests them. Existing tests, historical plans, and external
+guidance do not authorize these checks. Select focused UI tests so a broad suite
+cannot enable VoiceOver incidentally.
+If an excluded test is already running when the user changes the scope, stop it
+immediately before continuing other work.
 
 The `BuddyChecks.xcodeproj` app and `BuddyCheckCore` package implement the durable
 synthetic workflow. Exact build and test commands are in `docs/DEVELOPMENT.md`.
@@ -95,6 +111,7 @@ separately.
 For documentation changes, check links, consistency, and `git diff --check`,
 including new files in the review. For behavior changes, use focused meaningful
 tests plus the handoff's relevant workflow scenarios. Device checks must cover
-interruptions, calling/returning, notifications, and accessibility when affected.
+interruptions, calling/returning, and notifications when affected. Prioritize
+standard-size rendered screens and the main workflow; large-font work comes later.
 Keep source inspection, unit tests, simulator runs, device observation, backend
 persistence, and usability evidence distinct. Linux work is not an iOS build.

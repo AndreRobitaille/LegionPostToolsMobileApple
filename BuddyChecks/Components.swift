@@ -40,14 +40,16 @@ struct RowActionStyle: ButtonStyle {
 struct Page<Content: View>: View {
     @Environment(\.dynamicTypeSize) private var textSize
     var scrollResetID: String? = nil
+    var spacing: CGFloat = 24
+    var topPadding: CGFloat = 24
     @ViewBuilder var content: () -> Content
     var body: some View {
         ScrollViewReader { reader in
             ScrollView {
-                VStack(alignment: .leading, spacing: 24, content: content)
+                VStack(alignment: .leading, spacing: spacing, content: content)
                     .frame(maxWidth: 620, alignment: .leading)
                     .padding(.horizontal, textSize.isAccessibilitySize ? 16 : 24)
-                    .padding(.top, 24).padding(.bottom, 32).frame(maxWidth: .infinity)
+                    .padding(.top, topPadding).padding(.bottom, 32).frame(maxWidth: .infinity)
                     .tint(Palette.action).environment(\.colorScheme, .light)
                     .id("page-top")
             }

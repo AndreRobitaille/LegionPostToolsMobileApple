@@ -70,22 +70,41 @@ phone number for a synthetic fixture.
 
 ## Native UI tests
 
-Use a disposable simulator and supply its identifier explicitly:
+Use a disposable simulator and supply its identifier explicitly. Select only
+the workflow cases relevant to the change. For example:
 
 ```sh
 xcodebuild -project BuddyChecks.xcodeproj -scheme BuddyChecks \
   -configuration Debug -sdk iphonesimulator \
   -destination 'platform=iOS Simulator,id=SIMULATOR_UUID' \
   -derivedDataPath .build/Xcode CODE_SIGNING_ALLOWED=NO \
-  -parallel-testing-enabled NO test
+  -parallel-testing-enabled NO \
+  -only-testing:BuddyChecksUITests/StandardWorkflowUITests \
+  -only-testing:BuddyChecksUITests/BuddyChecksUITests/testInterruptedManualCheckCorrectionAndSingleRecord \
+  -only-testing:BuddyChecksUITests/ConnectedUITests/testConnectedSuggestionRecordAndServerReceipt \
+  test
 ```
+
+`StandardWorkflowUITests` contains only ordinary-size connected workflow checks:
+accepted facts and Home activity, method/note restoration after process restart,
+uncertain-save recovery, and stale-correction review. Its opt-in workflow-store
+fixture uses a UUID-isolated encrypted journal and a file-backed synthetic vault
+for unsigned simulator builds. It does not verify Keychain, call Contacts, or
+contact a Post server. Focused package coverage is
+`swift test --scratch-path .build/core --filter 'HomeActivityTests|JournalTests'`.
 
 The public UI tests exercise synthetic app responses and selected native adapters.
 They do not establish live Post permissions or production acceptance. Inspect
-ordinary and maximum accessibility text, VoiceOver, smaller layouts, interruptions,
-calling/returning, and notification permission changes when the behavior is affected.
-Unfiltered accessibility diagnostics can report unresolved findings; a successful
-focused workflow test does not clear those findings.
+standard-size primary-phone screens, interruptions, calling/returning, and
+notification permission changes when the behavior is affected.
+
+Andre's October 12 instruction excludes VoiceOver, assistive-technology checks,
+and accessibility audits from routine work. Do not enable or run them unless
+explicitly requested. Do not run an unfiltered UI suite: existing cases include
+VoiceOver and audit checks, sometimes through shared helpers. Inspect the selected
+case and its helpers before execution. His later clarification prioritizes major
+standard-size design and workflow improvements. Large-font checks and
+smaller-phone matrices come later and must not delay that work.
 
 ## Local connection and signing
 
